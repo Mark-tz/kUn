@@ -29,7 +29,7 @@ include_directories(
 
 set(HEADERS
 	visionmodule.h
-	messageformat.h
+        tinyvisionformat.h
 	${CMAKE_SOURCE_DIR}/Utils/kalmanfilter.h
 	${CMAKE_SOURCE_DIR}/Utils/matrix2d.h
 )
