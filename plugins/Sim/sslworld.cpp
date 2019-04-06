@@ -31,13 +31,16 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "messages_robocup_ssl_refbox_log.pb.h"
 #include "messages_robocup_ssl_wrapper.pb.h"
 #include "grSimMessage.pb.h"
-
+#include <QUdpSocket>
 
 #define ROBOT_GRAY 0.4
 #define WHEEL_COUNT 4
 
 using namespace std;
-
+namespace{
+    QUdpSocket *commandSocket;
+    QUdpSocket *blueStatusSocket,*yellowStatusSocket;
+}
 DLL_EXPORT SSLWorld* _w;
 dReal randn_notrig(dReal mu=0.0, dReal sigma=1.0);
 dReal randn_trig(dReal mu=0.0, dReal sigma=1.0);

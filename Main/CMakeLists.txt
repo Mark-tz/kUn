@@ -20,11 +20,19 @@ find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 list(APPEND libs ${PROTOBUF_LIBRARIES})
 
-file(GLOB PROTO_FILES "${CMAKE_SOURCE_DIR}/Utils/Protobuf/*.proto")
-protobuf_generate_cpp(PROTO_CPP PROTO_H ${PROTO_FILES})
+set(PROTO_LIST
+	messages_robocup_ssl_detection
+	messages_robocup_ssl_geometry_legacy
+	messages_robocup_ssl_geometry
+	messages_robocup_ssl_refbox_log
+	messages_robocup_ssl_wrapper_legacy
+	messages_robocup_ssl_wrapper
+)
+get_pb_file(PROTO_H PROTO_CPP ${PROTO_LIST})
 
 
 include_directories(
+	${CMAKE_BINARY_DIR}/proto
 	${CMAKE_SOURCE_DIR}/Utils
 	${CMAKE_SOURCE_DIR}/Utils/ZSPlugin
 	${CMAKE_SOURCE_DIR}/plugins/Sim

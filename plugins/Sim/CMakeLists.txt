@@ -20,10 +20,27 @@ find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 list(APPEND libs ${PROTOBUF_LIBRARIES})
 
-file(GLOB PROTO_FILES "${CMAKE_SOURCE_DIR}/Utils/Protobuf/*.proto")
-protobuf_generate_cpp(PROTO_CPP PROTO_H ${PROTO_FILES})
+set(PROTO_LIST
+	game_event
+	grSim_Commands
+	grSimMessage
+	grSim_Packet
+	grSim_Replacement
+	messages_robocup_ssl_detection
+	messages_robocup_ssl_geometry_legacy
+	messages_robocup_ssl_geometry
+	messages_robocup_ssl_refbox_log
+	messages_robocup_ssl_wrapper_legacy
+	messages_robocup_ssl_wrapper
+	referee
+	vision_detection
+	zss_cmd
+	zss_debug
+)
+get_pb_file(PROTO_H PROTO_CPP ${PROTO_LIST})
 
 include_directories(
+	${CMAKE_BINARY_DIR}/proto
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/physics
 	${CMAKE_SOURCE_DIR}/Utils

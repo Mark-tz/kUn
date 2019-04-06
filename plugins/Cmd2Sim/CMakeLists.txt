@@ -8,10 +8,14 @@ list(APPEND libs Qt5::Core)
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 list(APPEND libs ${PROTOBUF_LIBRARIES})
-file(GLOB PROTO_FILES "${CMAKE_SOURCE_DIR}/Utils/Protobuf/*.proto")
-protobuf_generate_cpp(PROTO_CPP PROTO_H ${PROTO_FILES})
+
+set(PROTO_LIST
+	zss_cmd
+)
+get_pb_file(PROTO_H PROTO_CPP ${PROTO_LIST})
 
 include_directories(
+	${CMAKE_BINARY_DIR}/proto
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/Utils
 	${CMAKE_SOURCE_DIR}/Utils/ZSPlugin
