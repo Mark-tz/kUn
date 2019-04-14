@@ -131,7 +131,7 @@ public:
   DEF_VALUE(int, Int, plotter_port)
   DEF_VALUE(bool, Bool, plotter)
   void loadRobotSettings(QString team);
-public slots:  
+public Q_SLOTS:  
   void loadRobotsSettings();
 };
 

@@ -2,7 +2,7 @@
 #define STATICPARAMS_H
 //change param for 2018 rule
 //wait for change camera number
-#include <QString>
+#include <string>
 namespace PARAM {
 const bool DEBUG = false;
 const int CAMERA = 4;
@@ -17,10 +17,10 @@ const int ROBOTMERGEDOSTANCE = 100;
 const int TEAMS = 2;
 }
 namespace ZSS {
-const QString ZSS_ADDRESS = "233.233.233.233";
-const QString SSL_ADDRESS = "224.5.23.2";
-const QString REF_ADDRESS = "224.5.23.1";
-const QString LOCAL_ADDRESS = "127.0.0.1";
+const std::string ZSS_ADDRESS = "233.233.233.233";
+const std::string SSL_ADDRESS = "224.5.23.2";
+const std::string REF_ADDRESS = "224.5.23.1";
+const std::string LOCAL_ADDRESS = "127.0.0.1";
 namespace Jupyter {
 const int CONTROL_BACK_SEND = 10002;
 const int CONTROL_RECEIVE = 10001;

@@ -14,7 +14,10 @@ namespace{
         return v;
     }
 }
-Cmd2Sim::Cmd2Sim(bool isTeamYellow):isTeamYellow(isTeamYellow){}
+Cmd2Sim::Cmd2Sim(bool isTeamYellow):isTeamYellow(isTeamYellow){
+    declare_receive("zss_cmds");
+    declare_publish("sim_cmds");
+}
 void Cmd2Sim::run(){
     ZSData data,sendData;
     Robots_Command zss_cmds;

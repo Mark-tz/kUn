@@ -52,13 +52,14 @@ private:
     char packet[200];
     char *in_buffer;  
     int lastInfraredBlue;
-    int lastInfraredYellow;  
+    int lastInfraredYellow;
 public:
+    SSLWorld();
+    virtual ~SSLWorld();
     virtual void run() override;
     dReal customDT;
     bool isGLEnabled;
-    DLL_EXPORT SSLWorld();
-    DLL_EXPORT virtual ~SSLWorld();
+    DLL_EXPORT static SSLWorld* instance();
     void step(dReal dt=-1);
     SSL_WrapperPacket* generatePacket(int cam_id=0);
     void publishPacket(int cam_id = -1);
@@ -86,9 +87,9 @@ public:
     SimRobot* robots[MAX_ROBOT_COUNT*2];
     QTime *timer;
     int sendGeomCount;
-public slots:
+public Q_SLOTS:
     void recvActions();
-signals:
+Q_SIGNALS:
     void fpsChanged(int newFPS);
 };
 

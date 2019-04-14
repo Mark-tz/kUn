@@ -43,6 +43,7 @@ void VisionModule::parseVisionMessage(SSL_WrapperPacket& packet, OriginMessage& 
     int blueSize = detection.robots_blue_size();
     int yellowSize = detection.robots_yellow_size();
 
+    std::cout << "ballsize : " << ballSize << " blue : " << blueSize << " yellow : " << yellowSize << std::endl;
     for (int i = 0; i < ballSize; i++) {
         const SSL_DetectionBall& ball = detection.balls(i);
         message.addBall(CGeoPoint(ball.x(), ball.y()));
@@ -100,7 +101,8 @@ void VisionModule::encodeMessage(Vision_DetectionFrame &detectionFrame, OriginMe
 
 
 void VisionModule::run() {
-    ZSData data;
+    std::cout << "Vision plugin start!" << std::endl;
+    ZSData data,sendData;
     SSL_WrapperPacket packet;
     Vision_DetectionFrame detectionFrame;
     while(true) {
@@ -116,11 +118,10 @@ void VisionModule::run() {
         updateVel(message);
         encodeMessage(detectionFrame, message);
 
-        QByteArray data;
-        int size = detectionFrame.ByteSize();
-        data.resize(size);
-        detectionFrame.SerializeToArray(data.data(), size);
-        publish("zss_vision", data.data(), size);
+        auto size = detectionFrame.ByteSize();
+        sendData.resize(size);
+        detectionFrame.SerializeToArray(sendData.ptr(), size);
+        publish("zss_vision", sendData.ptr(), size);
         std::cout << detectionFrame.ShortDebugString() << std::endl;
         detectionFrame.Clear();
 

@@ -1,18 +1,20 @@
 #include <iostream>
 #include <thread>
 #include "dllexport.h"
-#include "sslworld.h"
-#include "visionmodule.h"
+#include "Sim/sslworld.h"
+#include "Vision/visionmodule.h"
+#include "Decision/decisionmodule.h"
 using namespace std;
-DLL_IMPORT extern SSLWorld* _w;
+SSLWorld* sim;
 int main(){
-    _w = new SSLWorld();
+    sim = SSLWorld::instance();
     VisionModule vm;
-    _w->link(&vm,"ssl_vision");
-    vm.link(_w,"sim_signal");
-    std::thread t1([&]{_w->run();});
-    std::thread t2([&]{vm.run();});
-    t1.join();
-    t2.join();
+    DecisionModule dm;
+    sim->link(&vm,"ssl_vision");
+    vm.link(sim,"sim_signal");
+    sim->start();
+    vm.start();
+    dm.start();
+    while(true){}
 	return 0;
 }

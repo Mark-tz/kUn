@@ -21,13 +21,19 @@ file(GLOB PROTO_FILES "${CMAKE_SOURCE_DIR}/Utils/Protobuf/*.proto")
 FOREACH(FIL ${PROTO_FILES})
 	GET_FILENAME_COMPONENT(ABS_FIL ${FIL} ABSOLUTE)
 	GET_FILENAME_COMPONENT(FIL_WE ${ABS_FIL} NAME_WE)
-	# LIST(APPEND PROTO_CPP "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
-	# LIST(APPEND PROTO_H "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
 	EXECUTE_PROCESS(
 		COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${PROTO_FLAGS} --cpp_out=${PROTO_META_BASE_DIR} ${FIL}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 ENDFOREACH()
+
+foreach(p
+    CMP0071 # 3.10: Let AUTOMOC and AUTOUIC process GENERATED files
+    )
+  if(POLICY ${p})
+    cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
 
 
 set(VERSION "0.0.1")
@@ -42,5 +48,43 @@ standard_paths(${PROJECT_SOURCE_DIR} bin lib)
 
 set(CMAKE_CXX_STANDARD 17)
 
+ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
+
 add_subdirectory(plugins)
 add_subdirectory(Main)
+
+
+find_package(Qt5 COMPONENTS Core REQUIRED)
+list(APPEND PROJECT_INCLUDE_DIRS
+	${CMAKE_SOURCE_DIR}
+)
+set(EXPORT_HEADERS
+	${CMAKE_SOURCE_DIR}/Utils/ZSPlugin/zsplugin.hpp
+)
+set(srcs
+	${EXPORT_HEADERS}
+)
+set(target_lib zss_plugin)
+execute_process(COMMAND cling-config --cmake OUTPUT_VARIABLE CPYY_MODULE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+list(INSERT CMAKE_MODULE_PATH 0 ${CPYY_MODULE_PATH})
+find_package(Cppyy)
+
+add_library(${target_lib} SHARED ${srcs})
+
+set_target_properties(${target_lib} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+# target_include_directories(${target_lib} PUBLIC ${PROJECT_INCLUDE_DIRS})
+
+cppyy_add_bindings(
+   "${target_lib}" "0.0.1" "ZJUNlict" "zjunlict.ssl@gmail.com"
+   LANGUAGE_STANDARD "17"
+   GENERATE_OPTIONS "-D__PIC__;-Wno-macro-redefined"
+   INCLUDE_DIRS ${PROJECT_INCLUDE_DIRS}
+   LINK_LIBRARIES ${target_lib}
+   H_DIRS ${PROJECT_INCLUDE_DIRS}
+   H_FILES ${EXPORT_HEADERS})
+
+target_link_libraries(${target_lib} ${libs})
+
+install(TARGETS ${target_lib}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
