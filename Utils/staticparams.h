@@ -2,7 +2,7 @@
 #define STATICPARAMS_H
 //change param for 2018 rule
 //wait for change camera number
-#include <string>
+#include <QString>
 namespace PARAM {
 const bool DEBUG = false;
 const int CAMERA = 4;
@@ -26,7 +26,7 @@ const int CONTROL_BACK_SEND = 10002;
 const int CONTROL_RECEIVE = 10001;
 }
 namespace Medusa {
-const int DEBUG_MSG_SEND = 20001;
+const int DEBUG_MSG_SEND[2] = {20001,20002};
 }
 namespace Sim {
 const int SIM_RECEIVE = 30001;
@@ -37,11 +37,11 @@ const int BLUE_STATUS_PORT = 30011;
 const int YELLOW_STATUS_PORT = 30012;
 }
 namespace Athena {
-const int CONTROL_SEND[PARAM::TEAMS] = {10001, 10002};
+const int CONTROL_SEND[PARAM::TEAMS] = {50001, 50002};
 const int CONTROL_BACK_RECEIVE[PARAM::TEAMS] = {60001, 60002};
 const int VISION_SEND[PARAM::TEAMS] = {23333, 23334};
 const int SEND_TO_PYTHON = 41001;
-const int DEBUG_MSG_RECEIVE = 20001;
+const int DEBUG_MSG_RECEIVE[2] = {20001,20002};
 const int SIM_SEND = 20011;
 const double FRAME_RATE = 61;
 const float TOTAL_LATED_FRAME = 4.7f;

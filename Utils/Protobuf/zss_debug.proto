@@ -43,6 +43,9 @@ message Debug_Curve {
 	required Point p2 = 3;
 	required Point end = 4;
 }
+message Debug_Points {
+	repeated Point point = 1;
+}
 message Debug_Msg {
 	enum Debug_Type {
 		ARC 	= 0;
@@ -51,6 +54,7 @@ message Debug_Msg {
 		ROBOT 	= 3;
 		CURVE 	= 4;
 		POLYGON = 5;
+		Points   = 6;
 	}
 	required Debug_Type type = 1;
 	enum Color {
@@ -73,6 +77,7 @@ message Debug_Msg {
 	optional Debug_Robot robot = 	6;
 	optional Debug_Curve_ curve = 	7;
 	optional Debug_Polygon polygon = 8;
+	optional Debug_Points points = 9;
 }
 message Debug_Msgs{
 	repeated Debug_Msg msgs= 1;
