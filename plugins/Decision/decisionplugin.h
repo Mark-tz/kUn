@@ -6,5 +6,6 @@ public:
     DecisionPlugin(bool ifYellow, bool ifRight);
     ~DecisionPlugin();
 	void run();
+    void getVision();
 };
 #endif // __DECISION_H__

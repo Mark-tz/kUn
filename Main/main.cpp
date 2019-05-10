@@ -22,6 +22,7 @@ int main(){
     sim->link(&vision_sender,"ssl_vision");
     sim_packet_receiver.link(sim,"sim_packet");
     vm.link(sim,"sim_signal");
+    vm.link(&dm_blue_left,"zss_vision");
     sim->start();
     vm.start();
     vision_sender.start();
