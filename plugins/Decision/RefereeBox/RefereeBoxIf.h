@@ -8,10 +8,10 @@
  *	CRefereeBoxInterface.
  *  和RefereeBox的接口
  */
-class CRefereeBoxInterface{
+class COptionModule;
+class RefereeBoxInterface{
 public:
-	CRefereeBoxInterface();
-	~CRefereeBoxInterface();
+    static RefereeBoxInterface* Instance(COptionModule *pOption);
 	void start();
 	void stop();
     inline int getPlayMode(){refereeMutex.lock(); int result = _playMode;refereeMutex.unlock();return result;}
@@ -24,7 +24,10 @@ public:
     inline float getBallPlacementPosY(){ refereeMutex.lock();float result = ballPlacementY;refereeMutex.unlock();return result;}
 protected:
 	void receivingLoop();
+    RefereeBoxInterface(COptionModule *pOption);
+    ~RefereeBoxInterface();
 private:
+    static RefereeBoxInterface* _instance;
 	QUdpSocket receiveSocket;
 	bool _alive;
 	// 现在的裁判盒指令
@@ -43,5 +46,4 @@ private:
     float ballPlacementX,ballPlacementY;
     QMutex refereeMutex;
 };
-typedef NormalSingleton<CRefereeBoxInterface> RefereeBoxInterface;
 #endif

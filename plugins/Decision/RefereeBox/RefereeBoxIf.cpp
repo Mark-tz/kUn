@@ -6,7 +6,10 @@
 #include "referee.pb.h"
 #include "parammanager.h"
 #include "GDebugEngine.h"
+#include "OptionModule.h"
 #include <thread>
+#include "game_state.h"
+#include "param.h"
 #include <QString>
 namespace {
     int REFEREE_PORT = 10003;
@@ -24,19 +27,23 @@ namespace {
     };
     int VECTOR = 1;
 }
-
-CRefereeBoxInterface::~CRefereeBoxInterface() {
+RefereeBoxInterface* RefereeBoxInterface::_instance = nullptr;
+RefereeBoxInterface::~RefereeBoxInterface() {
     stop();
 }
-
-CRefereeBoxInterface::CRefereeBoxInterface():_playMode(PMNone) {
+RefereeBoxInterface* RefereeBoxInterface::Instance(COptionModule *pOption) {
+    if(_instance == nullptr)
+        _instance = new RefereeBoxInterface(pOption);
+    return _instance;
+}
+RefereeBoxInterface::RefereeBoxInterface(COptionModule *pOption):_playMode(PMNone) {
     ZSS::ZParamManager::instance()->loadParam(REFEREE_PORT,"AlertPorts/RefereePort",10003);
     bool isSimulation;
     bool isYellow;
     bool isRight;
     ZSS::ZParamManager::instance()->loadParam(isSimulation,"Alert/IsSimulation",false);
-    ZSS::ZParamManager::instance()->loadParam(isYellow,"ZAlert/IsYellow",false);
-    ZSS::ZParamManager::instance()->loadParam(isRight,"ZAlert/IsRight",false);
+    isYellow = pOption->MyColor() == TEAM_YELLOW;
+    isRight = pOption->MySide() == Param::Field::POS_SIDE_RIGHT;
     VECTOR = isRight ? -1 : 1;
 
     if(isSimulation && isYellow)
@@ -46,7 +53,7 @@ CRefereeBoxInterface::CRefereeBoxInterface():_playMode(PMNone) {
     receiveSocket.joinMulticastGroup(QHostAddress(QString::fromStdString(ZSS::REF_ADDRESS))); // receive Athena ref, need to change ZSS_ADDRESS
 }
 
-ZSS_THREAD_FUNCTION void CRefereeBoxInterface::start() {
+ZSS_THREAD_FUNCTION void RefereeBoxInterface::start() {
     _alive = true;
     try {
             auto threadCreator = std::thread([=]{receivingLoop();});
@@ -57,11 +64,11 @@ ZSS_THREAD_FUNCTION void CRefereeBoxInterface::start() {
     }
 }
 
-void CRefereeBoxInterface::stop() {
+void RefereeBoxInterface::stop() {
     _alive = false;
 }
 
-void CRefereeBoxInterface::receivingLoop() {
+void RefereeBoxInterface::receivingLoop() {
     SSL_Referee ssl_referee;
     QByteArray datagram;
     while( _alive ) {

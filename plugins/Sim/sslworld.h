@@ -28,7 +28,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "configwidget.h"
 #include "robot.h"
 #include "messages_robocup_ssl_wrapper.pb.h"
-// #include <QUdpSocket>
 #include <string>
 #include "zsplugin.hpp"
 #include "dllexport.h"
@@ -50,7 +49,6 @@ private:
     dReal last_dt;
     QList<SendingPacket*> sendQueue;
     char packet[200];
-    char *in_buffer;  
     int lastInfraredBlue;
     int lastInfraredYellow;
 public:
@@ -81,8 +79,6 @@ public:
     bool show3DCursor;
     dReal cursor_x,cursor_y,cursor_z;
     dReal cursor_radius;
-    // QUdpSocket *commandSocket;
-    // QUdpSocket *blueStatusSocket,*yellowStatusSocket;
     bool updatedCursor;
     SimRobot* robots[MAX_ROBOT_COUNT*2];
     QTime *timer;

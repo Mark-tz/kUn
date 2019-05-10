@@ -3,7 +3,6 @@
 #include "KickStatus.h"
 #include "BestPlayer.h"
 #include <ShootRangeList.h>
-#include "bayes/MatchState.h"
 #include "RobotSensor.h"
 #include "BallStatus.h"
 #include "SituationJudge.h"
@@ -318,10 +317,10 @@ bool CWorldModel::IsBestPlayerChanged()
 // 【#】 由球这点判断是否可以射门
 
 
-string	CWorldModel::CurrentBayes()
-{
-	return MatchState::Instance()->getMatchStateInString();
-}
+//string	CWorldModel::CurrentBayes()
+//{
+//	return MatchState::Instance()->getMatchStateInString();
+//}
 
 //play状态机跳转清理
 void CWorldModel::SPlayFSMSwitchClearAll(bool clear_flag)

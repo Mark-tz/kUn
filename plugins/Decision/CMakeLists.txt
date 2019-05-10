@@ -79,7 +79,6 @@ set(PROJECT_INCLUDE_DIRS
 	${CMAKE_CURRENT_SOURCE_DIR}/OtherLibs/cmu
 	${CMAKE_CURRENT_SOURCE_DIR}/OtherLibs/cornell
 	${CMAKE_CURRENT_SOURCE_DIR}/OtherLibs/nlopt
-	${CMAKE_CURRENT_SOURCE_DIR}/Strategy/bayes
 	${CMAKE_CURRENT_SOURCE_DIR}/Strategy/defence
 	${CMAKE_CURRENT_SOURCE_DIR}/Strategy/rolematch
 	${CMAKE_CURRENT_SOURCE_DIR}/Strategy/skill
@@ -107,7 +106,6 @@ file(GLOB CPPFILES
 	"${CMAKE_CURRENT_SOURCE_DIR}/OtherLibs/cmu/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/OtherLibs/cornell/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/OtherLibs/nlopt/*.cpp"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Strategy/bayes/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Strategy/defence/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Strategy/rolematch/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Strategy/skill/*.cpp"
@@ -115,13 +113,13 @@ file(GLOB CPPFILES
 )
 
 set(EXPORT_HEADERS
-	decisionmodule.h
+	decisionplugin.h
 )
 set(HEADERS
 	${EXPORT_HEADERS}
 )
 set(SOURCES
-	decisionmodule.cpp
+	decisionplugin.cpp
 )
 set(SRC
 	${HEADERS}

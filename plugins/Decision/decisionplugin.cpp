@@ -1,4 +1,4 @@
-#include "decisionmodule.h"
+#include "decisionplugin.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,7 +18,6 @@
 #include <VisionReceiver.h>
 
 #include <GDebugEngine.h>
-#include "bayes/MatchState.h"
 #include "gpuBestAlgThread.h"
 #include "Global.h"
 #include "DefendUtils.h"
@@ -71,50 +70,47 @@ CServerInterface::VisualInfo visionInfo;
 RefRecvMsg refRecvMsg;
 }
 
-DecisionModule::DecisionModule(){}
-DecisionModule::~DecisionModule(){}
-void DecisionModule::run(){
+DecisionPlugin::DecisionPlugin(bool ifYellow,bool ifRight){
+    option = new COptionModule(ifYellow,ifRight);
+}
+DecisionPlugin::~DecisionPlugin(){}
+void DecisionPlugin::run(){
 #ifdef USE_PYTHON_MODULE
     PythonModule::instance();
 #endif
     ZSS::ZParamManager::instance()->loadParam(IS_SIMULATION, "Alert/IsSimulation", false);
     initializeSingleton();
-    option = new COptionModule();
     CCommandInterface::instance(option);
     receiver = VisionReceiver::instance(option);
     decision = new CDecisionModule(vision);
     action = new CActionModule(vision, decision);
     vision->registerOption(option);
     WORLD_MODEL->registerVision(vision);
-    MATCH_STATE->initialize(option, vision);
+//    MATCH_STATE->initialize(option, vision);
     _best_visiondata_copy_mutex = new std::mutex();
     _value_getter_mutex = new std::mutex();
     GPUBestAlgThread::Instance()->initialize(VisionModule::Instance());
     CollisionDetect::Instance()->initialize(VisionModule::Instance());
-    RefereeBoxInterface::Instance();
+    RefereeBoxInterface::Instance(option);
 #ifdef USE_CUDA_MODULE
     ZCUDAModule::instance()->initialize(VisionModule::Instance());
 #endif
 	while(true){
-		visionEvent.wait();
-        decisionMutex->lock();
-        if (! receiver->getVisionInfo(visionInfo, refRecvMsg)) {
-            std::cout << "no vision input" << std::endl;
-        }
+//        get vision and referee message
+//		visionEvent.wait();
+//        decisionMutex->lock();
+//        if (! receiver->getVisionInfo(visionInfo, refRecvMsg)) {
+//            std::cout << "no vision input" << std::endl;
+//        }
         vision->SetRefRecvMsg(refRecvMsg);
         vision->SetNewVision(visionInfo);
 #ifdef USE_PYTHON_MODULE
         PythonModule::instance()->run();
 #endif
         decision->DoDecision(false);
-        if (! wireless_off) {
-            action->sendAction(visionInfo.ourRobotIndex);
-        } else {
-            action->sendNoAction(visionInfo.ourRobotIndex);
-        }
+//        send commands
+//        action->sendAction(visionInfo.ourRobotIndex);
         decisionMutex->unlock();
-//        GDebugEngine::Instance()->send(IS_SIMULATION && option->MyColor() == TEAM_YELLOW); // Simulation Yellow no debug messages
-        GDebugEngine::Instance()->send(option->MyColor() == TEAM_BLUE); //Show two teams debug messages
-//        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        GDebugEngine::Instance()->send(option->MyColor() == TEAM_BLUE);
 	}
 }

@@ -23,7 +23,7 @@ std::thread *_thread = nullptr;
 std::thread *_thread2 = nullptr;
 bool DEBUG_MODE = false;
 COptionModule *_pOption = 0;
-CRefereeBoxInterface *_referee = 0; //裁判盒
+RefereeBoxInterface *_referee = 0; //裁判盒
 std::mutex* visionMutex = 0; ///<用来线程互斥，保证数据完整
 const int VISION_PORT = 12345;
 const int _RecentLogLength =  30; //seconds
@@ -36,7 +36,7 @@ VisionReceiver::VisionReceiver(COptionModule *pOption): _threadAlive(false) {
 
 
     ///> 启动裁判盒
-    _referee = RefereeBoxInterface::Instance();
+    _referee = RefereeBoxInterface::Instance(pOption);
     _referee->start();
 
     ///> 初始化互斥锁

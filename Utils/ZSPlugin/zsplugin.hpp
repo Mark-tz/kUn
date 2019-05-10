@@ -148,6 +148,15 @@ public:
         }
         return res;
     }
+    virtual bool try_receive(const std::string& msg) final{
+        auto it = _databox.find(msg);
+        if (it == _databox.end()){
+            std::cerr << "ERROR : didn't DECLARE to RECEIVE this kind of message, check your message type : " << msg << std::endl;
+            return false;
+        }
+        bool res = it->second.try_wait();
+        return res;
+    }
     virtual void link(ZSPlugin* p,const std::string& msg) final{
         auto it = _subscribers.find(msg);
         if (it == _subscribers.end()){

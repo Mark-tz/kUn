@@ -22,7 +22,7 @@ class CWorldModel{
 	int getEnemyKickOffNum();
 	int getMarkingTouchArea(CGeoPoint leftPos1,CGeoPoint leftPos2,CGeoPoint rightPos1,CGeoPoint rightPos2);
 	bool checkEnemyKickOffNumChanged();
-	string CurrentBayes();
+
 	const bool canProtectBall(int current_cycle);
 	const bool canShootOnBallPos(int current_cycle, int myNum = 0);
 	const bool canPassOnBallPos(int current_cycle,CGeoPoint& passPos,CGeoPoint& guisePos, int myNum = 0);

@@ -57,7 +57,7 @@ class CBallPredictor {
   public:
     CBallPredictor();
     ~CBallPredictor();
-    void updateVision(int cycle, const PosT& pos, const CVector& vel, bool invert, bool); // 更新视觉信息
+    void updateVision(int cycle, const PosT& pos, const CVector& vel, bool invert); // 更新视觉信息
     int ballLostTime() const {
         return _ballLostTime;
     }

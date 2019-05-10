@@ -32,7 +32,7 @@ CBallPredictor::~CBallPredictor() {
         ballSpeedLog.close();
 }
 
-void CBallPredictor::updateVision(int cycle, const PosT& pos, const CVector& vel, bool invert, bool) {
+void CBallPredictor::updateVision(int cycle, const PosT& pos, const CVector& vel, bool invert) {
     // 每次处理一个_visionLogger里的数据，只用来保留预测输出
     // 该函数的处理结果就是更新thisCycle帧里面的球信息
     BallVisionData& thisCycle = _visionLogger.getVision(cycle);

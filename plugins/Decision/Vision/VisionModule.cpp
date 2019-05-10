@@ -16,7 +16,6 @@
 #include <GDebugEngine.h>
 #include <RobotsCollision.h>
 #include <BallStatus.h>
-#include "bayes/MatchState.h"
 #include "defence/DefenceInfo.h"
 //#include "XBoxController.h"
 #include "zsplugin.hpp"
@@ -94,34 +93,6 @@ void CVisionModule::SetNewVision(const CServerInterface::VisualInfo& vInfo) {
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     // 默认我方在球场的左边，切记
-//    for(int i=0;i<Param::Field::MAX_PLAYER_NUM;i++){
-//        qDebug() << vInfo.ourRobotIndex[i];
-//    }
-    static PosT _lastBall;
-    static double _lastDistBuffer = 0;
-    const auto& p1 = _lastBall;
-    const auto& p2 = vInfo.ball.valid ? vInfo.ball : _lastBall;
-    auto distBuffer = std::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
-    bool ballFilterSwitch = false;
-    if (vInfo.ball.valid && Utils::OutOfField(CGeoPoint(vInfo.ball.x, vInfo.ball.y), -5)) {
-        ballFilterSwitch = true;
-    } else if (distBuffer > 1 && _lastDistBuffer > 1) {
-        for (int i = 0; i < 2 * Param::Field::MAX_PLAYER_NUM; i++) {
-            if (vInfo.player[i].pos.valid) {
-                const auto& p1 = vInfo.player[i].pos;
-                const auto& p2 = vInfo.ball;
-                auto dist2 = std::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
-                if (dist2 < 9 + distBuffer) {
-                    ballFilterSwitch = true;
-                    break;
-                }
-            }
-        }
-    }
-//    ballFilterSwitch = false;
-    _lastDistBuffer = distBuffer;
-    _lastBall = vInfo.ball;
-//    std::cout<<vInfo.BallVel.mod()<<std::endl;
     const bool invert = !(_pOption->MySide() == Param::Field::POS_SIDE_LEFT);
 
     if (_pOption->MyColor() == TEAM_BLUE) {
@@ -151,7 +122,7 @@ void CVisionModule::SetNewVision(const CServerInterface::VisualInfo& vInfo) {
     /////////////////////////////////////////////////////////////////////////////
     /// @brief Step 1. 进行球预测,也就是输入当前球的观测进行滤波
     /////////////////////////////////////////////////////////////////////////////
-    _ballPredictor.updateVision(vInfo.cycle, vInfo.ball, vInfo.BallVel, invert, ballFilterSwitch);
+    _ballPredictor.updateVision(vInfo.cycle, vInfo.ball, vInfo.BallVel, invert);
 
     //printf("%d\n", RobotCapFactory::Instance()->getRobotCap(0,2)->maxSpeed(0));
     /////////////////////////////////////////////////////////////////////////////
@@ -201,7 +172,7 @@ void CVisionModule::SetNewVision(const CServerInterface::VisualInfo& vInfo) {
     BestPlayer::Instance()->update(this);
 
     // 【#TODO】 更新贝叶斯滤波器，评估目前比赛攻防形式
-    MatchState::Instance()->update();
+//    MatchState::Instance()->update();
 
     DefenceInfo::Instance()->updateDefenceInfo(this);
 

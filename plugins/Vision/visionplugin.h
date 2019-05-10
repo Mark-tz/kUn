@@ -8,10 +8,10 @@
 #include "messages_robocup_ssl_wrapper.pb.h"
 #include "vision_detection.pb.h"
 
-class VisionModule: public ZSPlugin {
+class VisionPlugin: public ZSPlugin {
   public:
-    DLL_EXPORT VisionModule();
-    DLL_EXPORT ~VisionModule();
+    DLL_EXPORT VisionPlugin();
+    DLL_EXPORT ~VisionPlugin();
     virtual void run() override;
 
   private:

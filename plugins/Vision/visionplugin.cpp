@@ -1,20 +1,20 @@
-#include "visionmodule.h"
+#include "visionplugin.h"
 #include "staticparams.h"
-VisionModule::VisionModule() {
+VisionPlugin::VisionPlugin() {
     declare_receive("ssl_vision");
     declare_publish("sim_signal");
     declare_publish("zss_vision");
 }
-VisionModule::~VisionModule() {
+VisionPlugin::~VisionPlugin() {
 }
-void VisionModule::updateVel(OriginMessage& message) {
+void VisionPlugin::updateVel(OriginMessage& message) {
     if (message.ballSize > 0) {
         updateBallVel(message);
     }
     updateRobotVel(PARAM::BLUE, message);
     updateRobotVel(PARAM::YELLOW, message);
 }
-void VisionModule::updateRobotVel(int team, OriginMessage& message) {
+void VisionPlugin::updateRobotVel(int team, OriginMessage& message) {
     for (auto i = 0; i < message.robotSize[team]; i++) {
         Robot & robot = message.robot[team][i];
         auto & playerPosVel = _robotPosFilter[team][robot.id].update(robot.pos.x(), robot.pos.y());
@@ -30,20 +30,20 @@ void VisionModule::updateRobotVel(int team, OriginMessage& message) {
     }
 }
 
-void VisionModule::updateBallVel(OriginMessage & message) {
+void VisionPlugin::updateBallVel(OriginMessage & message) {
     auto & tempMatrix = ballKalmanFilter.update(message.ball[0].pos);
     CGeoPoint filtPoint(tempMatrix(0, 0), tempMatrix(1, 0));
     CVector ballVel(tempMatrix(2, 0)* ZSS::Athena::FRAME_RATE, tempMatrix(3, 0)*ZSS::Athena::FRAME_RATE);
     message.ball[0].fill(filtPoint.x(), filtPoint.y(), ballVel);
 }
 
-void VisionModule::parseVisionMessage(SSL_WrapperPacket& packet, OriginMessage& message) {
+void VisionPlugin::parseVisionMessage(SSL_WrapperPacket& packet, OriginMessage& message) {
     const SSL_DetectionFrame& detection = packet.detection();
     int ballSize = detection.balls_size();
     int blueSize = detection.robots_blue_size();
     int yellowSize = detection.robots_yellow_size();
 
-    std::cout << "ballsize : " << ballSize << " blue : " << blueSize << " yellow : " << yellowSize << std::endl;
+//    std::cout << "ballsize : " << ballSize << " blue : " << blueSize << " yellow : " << yellowSize << std::endl;
     for (int i = 0; i < ballSize; i++) {
         const SSL_DetectionBall& ball = detection.balls(i);
         message.addBall(CGeoPoint(ball.x(), ball.y()));
@@ -62,7 +62,7 @@ void VisionModule::parseVisionMessage(SSL_WrapperPacket& packet, OriginMessage& 
     }
 }
 
-void VisionModule::encodeMessage(Vision_DetectionFrame &detectionFrame, OriginMessage & message) {
+void VisionPlugin::encodeMessage(Vision_DetectionFrame &detectionFrame, OriginMessage & message) {
     Vision_DetectionBall* detectionBall;
     Vision_DetectionRobot* detectionRobot[2][PARAM::ROBOTMAXID];
     if (message.ballSize > 0) {
@@ -100,7 +100,7 @@ void VisionModule::encodeMessage(Vision_DetectionFrame &detectionFrame, OriginMe
 
 
 
-void VisionModule::run() {
+void VisionPlugin::run() {
     std::cout << "Vision plugin start!" << std::endl;
     ZSData data,sendData;
     SSL_WrapperPacket packet;
@@ -122,7 +122,7 @@ void VisionModule::run() {
         sendData.resize(size);
         detectionFrame.SerializeToArray(sendData.ptr(), size);
         publish("zss_vision", sendData.ptr(), size);
-        std::cout << detectionFrame.ShortDebugString() << std::endl;
+//        std::cout << detectionFrame.ShortDebugString() << std::endl;
         detectionFrame.Clear();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));

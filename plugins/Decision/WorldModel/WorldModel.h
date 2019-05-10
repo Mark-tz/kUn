@@ -89,7 +89,7 @@ public:
     bool    IsInfraredOn(int);
 
 	bool	IsBestPlayerChanged();
-	string	CurrentBayes();
+//	string	CurrentBayes();
 	bool    CanDefenceExit();
 	// 能否在球的位置点射门
 	

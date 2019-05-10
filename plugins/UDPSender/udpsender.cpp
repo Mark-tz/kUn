@@ -18,6 +18,6 @@ void UDPSender::run(){
 	while(true){
 		receive(msg,data);
 		res = socket->writeDatagram((char*)data.ptr(),data.size(),QHostAddress(QString::fromStdString(address)),port);
-		std::cout << "writen : " << res << std::endl;
+//		std::cout << "writen : " << res << std::endl;
 	}
 }

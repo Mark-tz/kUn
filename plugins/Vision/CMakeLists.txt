@@ -30,7 +30,7 @@ list(APPEND PROJECT_INCLUDE_DIRS
 include_directories(${PROJECT_INCLUDE_DIRS})
 
 set(EXPORT_HEADERS
-	visionmodule.h
+        visionplugin.h
 )
 set(HEADERS
 	${EXPORT_HEADERS}
@@ -39,7 +39,7 @@ set(HEADERS
 	${CMAKE_SOURCE_DIR}/Utils/matrix2d.h
 )
 set(SOURCES
-	visionmodule.cpp
+        visionplugin.cpp
 	${CMAKE_SOURCE_DIR}/Utils/kalmanfilter.cpp
 	${CMAKE_SOURCE_DIR}/Utils/matrix2d.cpp
 )
