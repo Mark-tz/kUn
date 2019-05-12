@@ -110,6 +110,10 @@ public:
                 p->store(msg,data,size);
             }
         }
+        if (it == _subscribers.end()){
+            std::cerr << "ERROR : didn't DECLARE to PUBLISH this kind of message, check your message type : " << msg << std::endl;
+            return;
+        }
     }
     virtual void publish(const std::string& msg,const ZSData& data) final{
         auto it = _subscribers.find(msg);
@@ -117,6 +121,10 @@ public:
             for(auto p:_subscribers[msg]){
                 p->store(msg,data);
             }
+        }
+        if (it == _subscribers.end()){
+            std::cerr << "ERROR : didn't DECLARE to PUBLISH this kind of message, check your message type : " << msg << std::endl;
+            return;
         }
     }
     virtual void receive(const std::string& msg){

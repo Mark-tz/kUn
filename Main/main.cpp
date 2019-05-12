@@ -21,12 +21,15 @@ int main(){
     sim->link(&vm,"ssl_vision");
     sim->link(&vision_sender,"ssl_vision");
     sim_packet_receiver.link(sim,"sim_packet");
-    vm.link(sim,"sim_signal");
+    c2s_blue.link(sim,"sim_signal");
     vm.link(&dm_blue_left,"zss_vision");
+    dm_blue_left.link(&c2s_blue,"zss_cmds");
+    c2s_blue.link(sim,"sim_packet");
     sim->start();
     vm.start();
     vision_sender.start();
     dm_blue_left.start();
+    c2s_blue.start();
     while(true){
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }

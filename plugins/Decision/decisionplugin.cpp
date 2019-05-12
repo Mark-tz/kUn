@@ -85,6 +85,9 @@ DecisionPlugin::~DecisionPlugin(){}
 void DecisionPlugin::run(){
     qDebug() << "decision start";
     std::thread vision_thread([=]{ getVision(); });
+
+    ZSData commands_data;
+
 #ifdef USE_PYTHON_MODULE
     PythonModule::instance();
 #endif
@@ -100,7 +103,7 @@ void DecisionPlugin::run(){
     _value_getter_mutex = new std::mutex();
     GPUBestAlgThread::Instance()->initialize(VisionModule::Instance());
     CollisionDetect::Instance()->initialize(VisionModule::Instance());
-    RefereeBoxInterface::Instance(option);
+//    RefereeBoxInterface::Instance(option);
 #ifdef USE_CUDA_MODULE
     ZCUDAModule::instance()->initialize(VisionModule::Instance());
 #endif
@@ -115,10 +118,13 @@ void DecisionPlugin::run(){
 #ifdef USE_PYTHON_MODULE
         PythonModule::instance()->run();
 #endif
-        qDebug() << "get new vision from decision plugin";
+//        qDebug() << "get new vision from decision plugin";
         decision->DoDecision(false);
 //        send commands
-//        action->sendAction(visionInfo.ourRobotIndex);
+        action->sendAction(visionInfo.ourRobotIndex);
+        // 实物模式设定模式进行指令下发
+        CCommandInterface::instance()->sendCommands(commands_data);
+        publish("zss_cmds",commands_data.data(),commands_data.size());
         decisionMutex->unlock();
         GDebugEngine::Instance()->send(option->MyColor() == TEAM_BLUE);
 	}
@@ -145,11 +151,13 @@ void ZSS_THREAD_FUNCTION DecisionPlugin::getVision(){
     auto& temp = visionInfo;
     auto& _pOption = option;
     while(true){
+        temp.cycle++;
         receive("zss_vision",vision_data);
         vision_frame.ParseFromArray(vision_data.data(),vision_data.size());
 //        auto res = try_receive("ssl_referee",referee_data);
         auto robots_blue_n = std::min(vision_frame.robots_blue_size(), Param::Field::MAX_PLAYER_NUM);
         auto robots_yellow_n = std::min(vision_frame.robots_yellow_size(),Param::Field::MAX_PLAYER_NUM);
+//        qDebug() << robots_blue_n << robots_yellow_n;
         visionInfoMutex.lock();
         initInfo(temp);
         bool ballFound = vision_frame.has_ball();

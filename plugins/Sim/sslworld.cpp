@@ -226,7 +226,6 @@ SSLWorld::SSLWorld()
         p->addObject(walls[i]);
     const int wheeltexid = 4 * cfg->Robots_Count() + 12 + 1 ; //37 for 6 robots
 
-
     cfg->robotSettings = cfg->blueSettings;
     for (int k=0;k<cfg->Robots_Count();k++) {
         float a1 = -form1->x[k];
@@ -312,7 +311,7 @@ SSLWorld::SSLWorld()
 
 void SSLWorld::run(){
     std::cout << "SSLWorld plugin start!" << std::endl;
-//    std::thread rec([=]{recvActions();});
+    std::thread rec([=]{recvActions();});
     while(true){
         this->step(this->cfg->DeltaTime());
         receive("sim_signal");

@@ -39,14 +39,17 @@ bool CActionModule::sendAction(unsigned char robotIndex[]) {
     /************************************************************************/
     /* 第一步：遍历小车，执行赋予的任务，生成动作指令                       */
     /************************************************************************/
+//    cout << "markdebug : ";
     for (int vecNum = 1; vecNum <= Param::Field::MAX_PLAYER; ++ vecNum) {
         // 获取当前小车任务
+//        cout << int(robotIndex[vecNum - 1]) << ' ';
         if (robotIndex[vecNum - 1] < 0 || robotIndex[vecNum - 1] > 13) {
             cout << "Invalid number in actionmodule : " << int(robotIndex[vecNum - 1]) << endl;
         }
         CPlayerTask* pTask = TaskMediator::Instance()->getPlayerTask(vecNum);
         // 没有任务，跳过
         if (NULL == pTask) {
+//            cout << "null ";
             continue;
         }
 
@@ -86,7 +89,7 @@ bool CActionModule::sendAction(unsigned char robotIndex[]) {
         // 记录命令
         BallStatus::Instance()->setCommand(vecNum, kickPower, chipkickDist, dribble, _pVision->Cycle());
     }
-
+//    cout << endl;
     /************************************************************************/
     /* 第二步：指令清空处理                                                 */
     /************************************************************************/
@@ -96,9 +99,6 @@ bool CActionModule::sendAction(unsigned char robotIndex[]) {
     DribbleStatus::Instance()->clearDribbleCommand();
     // 清除上一周期的障碍物标记
     CPathPlanner::resetObstacleMask();
-
-    // 实物模式设定模式进行指令下发
-    CCommandInterface::instance()->sendCommands();
 
     return true;
 }

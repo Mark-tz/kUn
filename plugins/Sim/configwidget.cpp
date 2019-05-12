@@ -18,7 +18,7 @@ namespace{
 
 ConfigWidget::ConfigWidget()
 {
-    ADD_VALUE(game_vars,Int,Robots_Count, 12, "Robots Count")
+    ADD_VALUE(game_vars,Int,Robots_Count, 8, "Robots Count")
     ADD_VALUE(field_vars,Double,Field_Line_Width,0.020,"Line Thickness")
     ADD_VALUE(field_vars,Double,Field_Length,12.000,"Length")
     ADD_VALUE(field_vars,Double,Field_Width,9.000,"Width")

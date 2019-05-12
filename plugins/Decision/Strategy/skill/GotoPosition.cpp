@@ -257,7 +257,7 @@ CPlayerCommand* CGotoPositionV2::execute(const CVisionModule* pVision)
 		capability.maxAngularDec = MAX_ROTATION_ACC;
 
 		if (playerFlag & PlayerStatus::SLOWLY) {
-			capability.maxSpeed = 140;
+            capability.maxSpeed = 140;
 			capability.maxAccel *= SlowFactor;
 			capability.maxDec *= SlowFactor;
 			capability.maxAngularSpeed *= SlowFactor;
@@ -303,15 +303,15 @@ CPlayerCommand* CGotoPositionV2::execute(const CVisionModule* pVision)
         if (task().player.max_rot_speed > 1) {
             capability.maxAngularSpeed = task().player.max_rot_speed;
         }
-		if (WorldModel::Instance()->CurrentRefereeMsg() == "GameStop") {
-			const MobileVisionT ball = pVision->Ball();
-			if (ball.Pos().x() < -240 && abs(ball.Pos().y()) > 150) {
-				capability.maxSpeed = 100;
-			}
-			else {
-				capability.maxSpeed = 150;
-			}
-		}
+//		if (WorldModel::Instance()->CurrentRefereeMsg() == "GameStop") {
+//			const MobileVisionT ball = pVision->Ball();
+//			if (ball.Pos().x() < -240 && abs(ball.Pos().y()) > 150) {
+//				capability.maxSpeed = 100;
+//			}
+//			else {
+//				capability.maxSpeed = 150;
+//			}
+//		}
 
 		/************************************************************************/
 		/* 确定初末状态 结合 选取的控制方式生成运动指令                  */

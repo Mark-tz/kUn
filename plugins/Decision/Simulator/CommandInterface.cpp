@@ -24,21 +24,18 @@ std::thread *_thread = nullptr;
 }
 
 CCommandInterface::CCommandInterface(const COptionModule *pOption)
-    : pOption(pOption), receiveSocket(nullptr), command_socket(nullptr) {
+    : pOption(pOption){
     bool isYellow = false;
     ZSS::ZParamManager::instance()->loadParam(SIM_PORT, "AlertPorts/SimPort", 20011);
     ZSS::ZParamManager::instance()->loadParam(SELF_PORT, "Ports/SimSelfPort", 30015);
     ZSS::ZParamManager::instance()->loadParam(CHIP_ANGLE, "Simulator/ChipAngle", 45);
     ZSS::ZParamManager::instance()->loadParam(isYellow, "ZAlert/IsYellow", false);
     TEAM = isYellow ? PARAM::YELLOW : PARAM::BLUE;
-    command_socket = new QUdpSocket();
-    receiveSocket = new QUdpSocket();
-    receiveSocket->bind(QHostAddress::AnyIPv4, ZSS::Athena::CONTROL_BACK_RECEIVE[TEAM], QUdpSocket::ShareAddress);
     for (int i = 0; i < Param::Field::MAX_PLAYER; i++) {
         ::robot_command[i] = ::robots_command.add_command();
     }
-    _thread = new std::thread([ = ] {receiveInformation();});
-    _thread->detach();
+//    _thread = new std::thread([ = ] {receiveInformation();});
+//    _thread->detach();
 }
 
 CCommandInterface::~CCommandInterface(void) {
@@ -67,7 +64,8 @@ void CCommandInterface::setKick(int num, double kp, double cp) {
     commands[number].chip_kick = cp;
 }
 
-void CCommandInterface::sendCommands() {
+void CCommandInterface::sendCommands(ZSData& data) {
+//    qDebug() << "medusa send : " << commands[0].velocity_x << commands[0].velocity_y;
     for (int i = 0; i < Param::Field::MAX_PLAYER; i++) {
         ::robot_command[i]->set_robot_id(i);
         ::robot_command[i]->set_velocity_x(commands[i].velocity_x);
@@ -83,9 +81,8 @@ void CCommandInterface::sendCommands() {
         }
     }
     int size = ::robots_command.ByteSize();
-    QByteArray data(size, 0);
-    ::robots_command.SerializeToArray(data.data(), size);
-    command_socket->writeDatagram(data.data(), size, QHostAddress(QString::fromStdString(ZSS::LOCAL_ADDRESS)), ZSS::Athena::CONTROL_SEND[TEAM]);
+    data.resize(size);
+    ::robots_command.SerializeToArray(data.ptr(), size);
     for (int i = 0; i < Param::Field::MAX_PLAYER; i++) {
         ::robot_command[i]->Clear();
         commands[i].chip_kick = 0;
@@ -97,35 +94,35 @@ void CCommandInterface::sendCommands() {
     }
 }
 
-void CCommandInterface::receiveInformation() {
-    Robot_Status robot_status;
-    QByteArray datagram;
-    QHostAddress address;
-    quint16 udp_port;
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        while (receiveSocket->state() == QUdpSocket::BoundState && receiveSocket->hasPendingDatagrams()) {
-            datagram.resize(receiveSocket->pendingDatagramSize());
-            receiveSocket->readDatagram(datagram.data(), datagram.size(), &address, &udp_port);
-            robot_status.ParseFromArray(datagram, datagram.size());
-            auto&& id = robot_status.robot_id();
-            if(!(id >= 0 && id < Param::Field::MAX_PLAYER)) {
-                qDebug() << "ERROR received error robot id in command interface." << id;
-                continue;
-            }
-            auto& msg = RobotSensor::Instance()->robotMsg[id];
-            msg._mutex.lock();
-            msg.infrared = robot_status.infrared();
-            msg.chip_kick = robot_status.chip_kick() ? 3 : (msg.chip_kick);
-            msg.flat_kick = robot_status.flat_kick() ? 3 : (msg.flat_kick);
-            msg._mutex.unlock();
-//            qDebug() << address << udp_port;
-//            qDebug() << id << msg.infrared << RobotSensor::Instance()->robotMsg[id].infrared
-//                     << msg.chip_kick
-//                     << msg.flat_kick;
-        }
-    }
-}
+//void CCommandInterface::receiveInformation() {
+//    Robot_Status robot_status;
+//    QByteArray datagram;
+//    QHostAddress address;
+//    quint16 udp_port;
+//    while (true) {
+//        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+//        while (receiveSocket->state() == QUdpSocket::BoundState && receiveSocket->hasPendingDatagrams()) {
+//            datagram.resize(receiveSocket->pendingDatagramSize());
+//            receiveSocket->readDatagram(datagram.data(), datagram.size(), &address, &udp_port);
+//            robot_status.ParseFromArray(datagram, datagram.size());
+//            auto&& id = robot_status.robot_id();
+//            if(!(id >= 0 && id < Param::Field::MAX_PLAYER)) {
+//                qDebug() << "ERROR received error robot id in command interface." << id;
+//                continue;
+//            }
+//            auto& msg = RobotSensor::Instance()->robotMsg[id];
+//            msg._mutex.lock();
+//            msg.infrared = robot_status.infrared();
+//            msg.chip_kick = robot_status.chip_kick() ? 3 : (msg.chip_kick);
+//            msg.flat_kick = robot_status.flat_kick() ? 3 : (msg.flat_kick);
+//            msg._mutex.unlock();
+////            qDebug() << address << udp_port;
+////            qDebug() << id << msg.infrared << RobotSensor::Instance()->robotMsg[id].infrared
+////                     << msg.chip_kick
+////                     << msg.flat_kick;
+//        }
+//    }
+//}
 
 CCommandInterface* CCommandInterface::instance(const COptionModule *pOption) {
     if(_instance == 0)

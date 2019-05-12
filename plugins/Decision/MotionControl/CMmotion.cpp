@@ -290,6 +290,7 @@ double compute_stop(double v, double max_a)
       compute_motion_1d(ang, ang_v, 0.0, max_angle_accel, max_angle_decel, max_angle_speed, angle_accel_factor, ang_a, time_a, time_a_acc, time_a_dec, time_a_flat);
 
       v = v + a * FRAME_PERIOD;
+//      cout << "markdebug111 v : " << v << " " << max_speed;
       ang_v += ang_a * FRAME_PERIOD;
       double delta_ang = ang_v * FRAME_PERIOD;
       v.rotate(-delta_ang);
@@ -314,7 +315,7 @@ double compute_stop(double v, double max_a)
       nextStep.SetPos(next_pos);
       nextStep.SetDir(next_angle);
       nextStep.SetVel(v);
-      carControlCommand << v.x() << " " << v.y() << endl;
+//      cout << v.x() << " " << v.y() << endl;
       nextStep.SetRotVel(ang_v);
   }
 

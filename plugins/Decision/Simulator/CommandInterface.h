@@ -11,8 +11,8 @@
 #include "param.h"
 #include <QObject>
 #include <OptionModule.h>
-
-class QUdpSocket;
+#include "zsplugin.hpp"
+//class QUdpSocket;
 
 struct RobotCommand{
     double velocity_x;
@@ -34,15 +34,15 @@ public:
     static void destruct();
     void setSpeed(int num, double dribble, double vx, double vy, double vr);
     void setKick(int num, double kp, double cp);
-    void sendCommands();
+    void sendCommands(ZSData&);
 private:
-    void receiveInformation();
+//    void receiveInformation();
 private:
     static CCommandInterface* _instance;
     RobotCommand commands[Param::Field::OUR_PLAYER_NUM];
     const COptionModule *pOption;
-    QUdpSocket *command_socket;
-    QUdpSocket *receiveSocket;
+//    QUdpSocket *command_socket;
+//    QUdpSocket *receiveSocket;
 };
 
 #endif

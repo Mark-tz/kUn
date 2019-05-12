@@ -18,15 +18,17 @@ void VisionPlugin::updateRobotVel(int team, OriginMessage& message) {
     for (auto i = 0; i < message.robotSize[team]; i++) {
         Robot & robot = message.robot[team][i];
         auto & playerPosVel = _robotPosFilter[team][robot.id].update(robot.pos.x(), robot.pos.y());
-        robot.setPos(CGeoPoint(playerPosVel(0, 0), playerPosVel(1, 0)));
-        robot.velocity = CVector(playerPosVel(2, 0), playerPosVel(3, 0));
+        CGeoPoint filtPoint (playerPosVel(0, 0), playerPosVel(1, 0));
+        CVector PlayVel(playerPosVel(2, 0), playerPosVel(3, 0));
 
         auto &playerRotVel = _robotDirFilter[team][robot.id].update(std::cos(robot.angle), std::sin(robot.angle));
         double filterDir = std::atan2(playerRotVel(1, 0), playerRotVel(0, 0));
-        double rotVel = playerRotVel(0, 1) * std::cos(90 * 3.1416 / 180 + filterDir)
-                        + playerRotVel(1, 1) * std::sin(90 * 3.1416 / 180 + filterDir);
+        double rotVel = playerRotVel(2, 0) * std::cos(90 * 3.1416 / 180 + filterDir)
+                        + playerRotVel(3, 0) * std::sin(90 * 3.1416 / 180 + filterDir);
         robot.angle = filterDir;
         robot.rotateVel = rotVel * ZSS::Athena::FRAME_RATE;
+        robot.pos = filtPoint;
+        robot.velocity = PlayVel * ZSS::Athena::FRAME_RATE;
     }
 }
 
@@ -106,13 +108,11 @@ void VisionPlugin::run() {
     SSL_WrapperPacket packet;
     Vision_DetectionFrame detectionFrame;
     while(true) {
-        publish("sim_signal");
         receive("ssl_vision", data);
         //Parse
         packet.ParseFromArray(data.data(), data.size());
         OriginMessage message;
         if (packet.has_detection()) {
-            //std::cout << packet.ShortDebugString() << std::endl;
             parseVisionMessage(packet, message);
         }
         updateVel(message);
@@ -122,9 +122,8 @@ void VisionPlugin::run() {
         sendData.resize(size);
         detectionFrame.SerializeToArray(sendData.ptr(), size);
         publish("zss_vision", sendData.ptr(), size);
-//        std::cout << detectionFrame.ShortDebugString() << std::endl;
         detectionFrame.Clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 }
