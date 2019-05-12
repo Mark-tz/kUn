@@ -6,9 +6,7 @@
 #include <singleton.h>
 #include "defence/EnemySituation.h"
 #include "BallStatus.h"
-#include "NormalPlayUtils.h"
 #include "BallSpeedModel.h"
-extern bool record_run_pos_on;
 ///
 /// @file   WoldModel.h
 /// @author Penghui Yin <cliffyin@zju.edu.cn>
@@ -111,26 +109,9 @@ public:
 	const bool	KickDirArrived (int current_cycle, double kickdir, double kickdirprecision, int myNum = myDefaultNum);
 
     const bool canProtectBall(int current_cycle);
-	const bool canShootOnBallPos(int current_cycle, int myNum = myDefaultNum);
-	const bool canPassOnBallPos(int current_cycle,CGeoPoint& passPos,CGeoPoint& guisePos, int myNum = myDefaultNum);
-	const bool canKickAtEnemy(int current_cycle, CGeoPoint& kickDir,int myNum = myDefaultNum,int priority=0);
-	const string getBallStatus(int current_cycle,int meNum=0);
-	const string getAttackDecision(int current_cycle,int meNum = 0);
+    const bool canShootOnBallPos(int current_cycle, int myNum = myDefaultNum);
+    const bool canKickAtEnemy(int current_cycle, CGeoPoint& kickDir,int myNum = myDefaultNum,int priority=0);
     const bool getMessiAttackDecision(int current_cycle);
-    const int getAttackerAmount(int current_cycle);
-	const bool generateTwoPassPoint(CGeoPoint& passOne,CGeoPoint& passTwo){
-		CGeoPoint predictBallPos=BallSpeedModel::Instance()->posForTime(15,_pVision);
-		return NormalPlayUtils::generateTwoPassPoint(predictBallPos,passOne,passTwo);
-	}
-	const CGeoPoint getTandemPos(int myNum=myDefaultNum){
-		CGeoPoint tandemPos=CGeoPoint(0,0);
-		NormalPlayUtils::generateTandemCond(_pVision,tandemPos,myNum);
-		return tandemPos;
-	}
-	const double getTandemDir(int myNum=myDefaultNum){
-		CGeoPoint tandemPos=CGeoPoint(0,0);
-		return NormalPlayUtils::generateTandemCond(_pVision,tandemPos,myNum);
-	}
 	const int getBallToucher(){
 		return BallStatus::Instance()->getBallToucher();
 	}
@@ -146,14 +127,7 @@ public:
 	void clearBallStateCouter(){
 		BallStatus::Instance()->clearBallStateCouter();
 	}
-	int getSuitSider(){
-		return NormalPlayUtils::getSuitSider(_pVision);
-	}
 	void setBallHandler(int num=0);
-
-	bool isRecordRunPos(){
-		return record_run_pos_on;
-	}
 
 	// For FreeKick
 	bool isBeingMarked(int myNum);

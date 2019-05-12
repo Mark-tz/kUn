@@ -1,5 +1,4 @@
 #include "NormalPlayUtils.h"
-#include "gpuBestAlgThread.h"
 #include "TaskMediator.h"
 #include "Global.h"
 //场地标号
@@ -146,72 +145,6 @@ namespace NormalPlayUtils{
 		}
 		return false;
 	}
-
-	bool generateTwoPassPoint(CGeoPoint ball,CGeoPoint& passPosOne,CGeoPoint& passPosTwo){
-		static int _lastAreaNum=0;
-		static bool _isBlockShootLine=false;
-		int areaNum=6;
-		bool isNewField=true;
-
-		if (Utils::OutOfField(ball,1)){
-			areaNum=_lastAreaNum;
-			isNewField=false;
-		}else{
-			bool isCloseBorder=false;
-			for (int i=0;i<6;i++)
-			{
-				if(isPosInSquareArea(ball,fieldSquareArray[i]._leftDownPos,fieldSquareArray[i]._rightUpPos)){
-					areaNum=i;
-					break;
-				}
-			}
-			isCloseBorder=isPosCloseBorder(ball,fieldSquareArray[_lastAreaNum]._leftDownPos,fieldSquareArray[_lastAreaNum]._rightUpPos);
-			
-			if (isCloseBorder&&areaNum!=_lastAreaNum&&_lastAreaNum!=6||areaNum==6){
-				areaNum=_lastAreaNum;
-				isNewField=false;
-			}else{
-				_lastAreaNum=areaNum;
-			}
-		}
-		GPUBestAlgThread::Instance()->setSendPoint(ball);
-		passPosOne=GPUBestAlgThread::Instance()->getBestPoint(fieldSquareMap[areaNum][0]._leftUpPos,fieldSquareMap[areaNum][0]._rightDownPos,1,RECT_MODE,true);
-		GPUBestAlgThread::Instance()->setSendPoint(ball);
-		passPosTwo=GPUBestAlgThread::Instance()->getBestPoint(fieldSquareMap[areaNum][1]._leftUpPos,fieldSquareMap[areaNum][1]._rightDownPos,2,RECT_MODE,true);
-		
-
-		/*static CGeoPoint _lastPassPos1=passPosOne;
-		static CGeoPoint _lastPassPos2=passPosTwo;
-
-		CGeoPoint theirGoal=CGeoPoint(Param::Field::PITCH_LENGTH/2,0);	
-		double shootDir=(ball-theirGoal).dir();
-		CGeoSegment ballVelSeg=CGeoSegment(ball,ball+Utils::Polar2Vector(500,shootDir));
-
-		CGeoLineLineIntersection inter=CGeoLineLineIntersection(ballVelSeg,lastNowSeg);
-		bool interShootDir=false;
-
-		if (!NormalPlayUtils::isEnemyBlockShootLine(ball,shootDir,30)){
-			if (inter.Intersectant()){
-				CGeoPoint interPos;
-				interPos=inter.IntersectPoint();
-				if (ballVelSeg.IsPointOnLineOnSegment(interPos)&&lastNowSeg.IsPointOnLineOnSegment(interPos)){
-					interShootDir=true;
-					_isBlockShootLine=true;
-				}
-			}
-		}
-		if (interShootDir){
-			passPosOne=_lastPassPos1;
-		}else{
-			_lastPassPos1=passPosOne;
-		}*/
-
-		//GDebugEngine::Instance()->gui_debug_x(passPosOne,COLOR_RED);
-		//GDebugEngine::Instance()->gui_debug_x(passPosTwo,COLOR_RED);
-		
-		return isNewField;
-	}
-
 	bool isEnemyCloseToReceiver(const CVisionModule* pVision,CGeoPoint receiver,double range){
 		CGeoPoint theirGoal(Param::Field::PITCH_LENGTH/2,0);
 		double shootDir=(theirGoal-receiver).dir();

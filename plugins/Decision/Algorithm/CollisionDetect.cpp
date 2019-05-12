@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #define SPLIT_THRESHOLD 4 //split 阈值
-extern Semaphore vision_finish_semaphore;
 
 CCollisionDetect::CCollisionDetect():_VisionQueue(MAX_FRAME_NUM)
 {
@@ -42,10 +41,10 @@ void CCollisionDetect::visionAlart()
 }
 
 void ZSS_THREAD_FUNCTION CCollisionDetect::doCollisionDetect() {
-	while (true) {
-        vision_finish_semaphore.wait();
-		CollisionDetect::Instance()->visionAlart();
-	}
+//	while (true) {
+//        vision_finish_semaphore.wait();
+//		CollisionDetect::Instance()->visionAlart();
+//	}
 }
 
 void CCollisionDetect::recordPos()

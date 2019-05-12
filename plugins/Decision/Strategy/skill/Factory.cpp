@@ -54,7 +54,6 @@
 #include "HoldBall.h"
 #include "GoAndTurnKickV4.h"
 #include "CmuTurnKickV1.h"
-#include "ZPassV2.h"
 
 /************************************************************************/
 /*                      TaskFactoryV2									*/
@@ -248,10 +247,6 @@ CPlayerTask* CTaskFactoryV2::GoAndTurnKickV4(const TaskT &task){
 
 CPlayerTask* CTaskFactoryV2::CmuTurnKickV1(const TaskT &task){
     return MakeTask<CCmuTurnKickV1>(task);
-}
-
-CPlayerTask* CTaskFactoryV2::ZPassV2(const TaskT &task){
-    return MakeTask<CZPassV2>(task);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -764,19 +759,5 @@ namespace PlayerRole {
         playerTask.player.kickpower = power;
         playerTask.player.angle = dir;
         return TaskFactoryV2::Instance()->CmuTurnKickV1(playerTask);
-    }
-
-    CPlayerTask* makeItZPassV2(const int num,const CGeoPoint& target,
-                               const CGeoPoint& waitpos, const double power,
-                               const double dir, const int flag) {
-        static TaskT playerTask;
-        playerTask.executor = num;
-        playerTask.player.pos = target;
-        playerTask.player.speed_x = waitpos.x();
-        playerTask.player.speed_y = waitpos.y();
-        playerTask.player.kickpower = power;
-        playerTask.player.angle = dir;
-        playerTask.player.flag = flag;
-        return TaskFactoryV2::Instance()->ZPassV2(playerTask);
     }
 }

@@ -122,7 +122,6 @@ private:
 
 	// 先将PlayInterface的信息加入BallStatus中
 public:
-    std::string checkBallState(const CVisionModule* pVision,int meNum=0);
 	void clearBallStateCouter();
 	void setChipKickState(bool b_set){ _chipkickstate = b_set;}
 	bool getChipKickState()const { return _chipkickstate; }

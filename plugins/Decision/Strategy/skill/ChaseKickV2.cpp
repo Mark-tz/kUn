@@ -18,6 +18,7 @@
 #include "KickStatus.h"
 #include "WorldModel.h"
 #include "parammanager.h"
+#include "NormalPlayUtils.h"
 namespace
 { 
 	//2.轨迹生成算法使用变量

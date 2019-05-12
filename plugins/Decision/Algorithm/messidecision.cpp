@@ -1,5 +1,4 @@
 #include "messidecision.h"
-#include "receivePos.h"
 #include "SkillUtils.h"
 #include <QDebug>
 #include "GDebugEngine.h"
@@ -359,11 +358,6 @@ void CMessiDecision::generateReceiverAndPos() {
 
 
 #else
-    ReceivePosModule::Instance()->generatePassPos(_pVision, _leader);
-    _receiver = ReceivePosModule::Instance()->bestReceiver();
-    _receiverPos = ReceivePosModule::Instance()->bestPassPoint();
-    _isFlat = true;
-    _passVel = 300;
 #endif
 }
 

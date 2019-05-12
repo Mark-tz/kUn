@@ -4,8 +4,8 @@
 #include <utils.h>
 #include <GDebugEngine.h>
 #include "utils.h"
-#include "NormalPlayUtils.h"
 #include "KickDirection.h"
+#include "NormalPlayUtils.h"
 namespace{
 	CGeoPoint mediumPos=CGeoPoint(9999,9999);
 }

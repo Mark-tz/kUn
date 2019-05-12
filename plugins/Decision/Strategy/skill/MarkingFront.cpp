@@ -13,12 +13,12 @@
 #include "BallSpeedModel.h"
 #include <GDebugEngine.h>
 #include "PlayInterface.h"
-#include "NormalPlayUtils.h"
 #include "WorldModel.h"
 #include "BestPlayer.h"
 #include "defence/DefenceInfo.h"
 #include "KickDirection.h"
-
+#include "SkillUtils.h"
+#include "NormalPlayUtils.h"
 namespace
 {
 	//2.轨迹生成算法使用变量
@@ -93,7 +93,7 @@ void CMarkingFront::plan(const CVisionModule* pVision){
 
 	if (state()!=Touch){
 		_markEnemyNum=markEnemyNum;
-		int temptNum=NormalPlayUtils::getTheirMostClosetoPos(pVision,ball.Pos());
+        int temptNum = ZSkillUtils::instance()->getTheirBestPlayer();
 		PlayerVisionT temptKickEnemy=pVision->TheirPlayer(temptNum);
 		double hetoBallDir=(ball.Pos()-temptKickEnemy.Pos()).dir();
 		if (fabs(Utils::Normalize(hetoBallDir-temptKickEnemy.Dir()))<Param::Math::PI*25/180)

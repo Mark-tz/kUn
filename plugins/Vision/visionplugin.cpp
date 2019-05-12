@@ -124,6 +124,6 @@ void VisionPlugin::run() {
         publish("zss_vision", sendData.ptr(), size);
         detectionFrame.Clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::microseconds(2000));
     }
 }

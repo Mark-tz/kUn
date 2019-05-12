@@ -91,7 +91,6 @@ public:
     CPlayerTask* HoldBall(const TaskT& task);
     CPlayerTask* GoAndTurnKickV4(const TaskT& task);
     CPlayerTask* CmuTurnKickV1(const TaskT &task);
-    CPlayerTask* ZPassV2(const TaskT &task);
 protected:
 	template < class CTaskType >
 	CPlayerTask* MakeTask( const TaskT& task );
@@ -168,12 +167,6 @@ namespace PlayerRole{
                                             const int flag,
                                             const double power,
                                             const double dir);
-    extern CPlayerTask* makeItZPassV2(const int num,
-                                      const CGeoPoint& target,
-                                      const CGeoPoint& waitpos,
-                                      const double power,
-                                      const double dir,
-                                      const int flag);
 }
 
 #endif // _TASK_FACTORY_V2_H_

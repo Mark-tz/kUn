@@ -6,7 +6,6 @@ CDribbleStatus* dribbleStatus;
 CGDebugEngine*  debugEngine;
 CWorldModel*	world;
 CKickDirection* kickDirection;
-CGPUBestAlgThread* bestAlg;
 CDefPos2015* defPos2015;
 CIndirectDefender* indirectDefender;
 CTandemPos* tandemPos;
@@ -25,8 +24,7 @@ void initializeSingleton()
 	dribbleStatus = DribbleStatus::Instance();
 	debugEngine   = GDebugEngine::Instance();
 	world		  = WorldModel::Instance();
-	kickDirection = KickDirection::Instance();
-	bestAlg		  = GPUBestAlgThread::Instance();
+    kickDirection = KickDirection::Instance();
 	supportPos = SupportPos::Instance();
 	defPos2015 = DefPos2015::Instance();
 	bestPlayer    = BestPlayer::Instance();

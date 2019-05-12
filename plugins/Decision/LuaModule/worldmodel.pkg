@@ -25,23 +25,14 @@ class CWorldModel{
 
 	const bool canProtectBall(int current_cycle);
 	const bool canShootOnBallPos(int current_cycle, int myNum = 0);
-	const bool canPassOnBallPos(int current_cycle,CGeoPoint& passPos,CGeoPoint& guisePos, int myNum = 0);
 	const bool canKickAtEnemy(int current_cycle, CGeoPoint& kickDir,int myNum = 0,int priority=0);
-	const string getBallStatus(int current_cycle,int meNum=0);
-	const int getAttackerAmount(int current_cycle);
-	const string getAttackDecision(int current_cycle,int meNum = 0);
 	const bool getMessiAttackDecision(int current_cycle);
-	const bool generateTwoPassPoint(CGeoPoint& passOne,CGeoPoint& passTwo);
-	const double getTandemDir(int myNum = 0);
-	const CGeoPoint getTandemPos(int myNum = 0);
 	const int getBallToucher();
 	const int getLastBallToucher();
 	const CGeoLine getBallChipLine();
 	const bool IsOurBallByAutoReferee();
 	void clearBallStateCouter();
-	int getSuitSider();
 	void setBallHandler(int num=0);
-	bool isRecordRunPos();
 	bool isBeingMarked(int myNum);
 	bool isPassLineBlocked(int myNum, double allowance = 4.0);
 	bool isShootLineBlocked(int myNum, double range = 150, double allowance = 3.0);

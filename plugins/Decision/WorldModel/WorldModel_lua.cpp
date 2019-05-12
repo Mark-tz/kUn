@@ -5,13 +5,10 @@
 #include <ShootRangeList.h>
 #include "RobotSensor.h"
 #include "BallStatus.h"
-#include "SituationJudge.h"
-#include "BallAdvanceDecision.h"
 #include "messidecision.h"
 #include "BufferCounter.h"
 #include "BallSpeedModel.h"
 #include "KickDirection.h"
-#include "NormalPlayUtils.h"
 #include "TaskMediator.h"
 #include "FreeKickUtils.h"
 #include "param.h"
@@ -392,45 +389,6 @@ const bool CWorldModel::canShootOnBallPos(int current_cycle, int myNum) {
 	return _canshootonballpos;
 }
 
-
-const bool CWorldModel::canPassOnBallPos(int current_cycle,CGeoPoint& passPos,CGeoPoint& guisePos,int myNum ){
-	static int last_cycle = -1;
-	static bool _canPassOnBallPos;
-
-	if (last_cycle < current_cycle) {
-		if (! Utils::PlayerNumValid(myNum)) {
-			myNum = BestPlayer::Instance()->getOurBestPlayer();
-			if (! Utils::PlayerNumValid(myNum)) {
-				myNum = 1;
-			}
-		}
-		const MobileVisionT ball=_pVision->Ball();
-		const PlayerVisionT he=_pVision->TheirPlayer(BestPlayer::Instance()->getTheirBestPlayer());
-		const PlayerVisionT me=_pVision->OurPlayer(myNum);
-		CGeoPoint passPosOne,passPosTwo;
-
-		CGeoPoint predictBall=BallSpeedModel::Instance()->posForTime(60,_pVision);
-		NormalPlayUtils::generateTwoPassPoint(predictBall,passPosOne,passPosTwo);
-		if (NormalPlayUtils::canPassBetweenTwoPos(_pVision,passPosOne,myNum))
-		{
-			passPos=passPosOne;
-			guisePos=passPosTwo;
-			_canPassOnBallPos=true;
-		}else{
-			if (NormalPlayUtils::canPassBetweenTwoPos(_pVision,passPosTwo,myNum))
-			{
-				passPos=passPosTwo;
-				guisePos=passPosOne;
-				_canPassOnBallPos=true;
-			}else{
-				_canPassOnBallPos=false;
-			}
-		}
-		last_cycle=current_cycle;
-	}
-	return _canPassOnBallPos;
-}
-
 const bool CWorldModel::canKickAtEnemy(int current_cycle,CGeoPoint& kickDir, int myNum,int priority){
 	static int last_cycle = -1;
 	static bool _canKickAtEnemy;
@@ -489,27 +447,6 @@ const bool CWorldModel::canKickAtEnemy(int current_cycle,CGeoPoint& kickDir, int
 
 }
 
-const string CWorldModel::getBallStatus(int current_cycle,int meNum){
-	static int last_cycle = -1;
-	static string lastState = "None";
-	if (last_cycle < current_cycle) {
-		last_cycle = current_cycle;
-		lastState = BallStatus::Instance()->checkBallState(_pVision, meNum);
-	}
-	return lastState;
-}
-
-const string CWorldModel::getAttackDecision(int current_cycle, int meNum) {
-	static int last_cycle = -1;
-	static string lastState = "None";
-	if (last_cycle < current_cycle) {
-		last_cycle = current_cycle;
-		lastState = BallAdvanceDecision::Instance()->generateAttackDecision(_pVision, meNum);
-		//cout << "debug" << endl;
-	}
-	return lastState;
-}
-
 const bool CWorldModel::getMessiAttackDecision(int current_cycle) {
     static int last_cycle = -1;
     if (last_cycle < current_cycle) {
@@ -519,16 +456,6 @@ const bool CWorldModel::getMessiAttackDecision(int current_cycle) {
         return true;
     }
     return false;
-}
-
-const int CWorldModel::getAttackerAmount(int current_cycle) {
-	static int last_cycle = -1;
-	static int lastAmount = 1;
-	if (last_cycle < current_cycle) {
-		last_cycle = current_cycle;
-        lastAmount = SituationJudge::Instance()->checkAttackerAmount(_pVision);
-	}
-	return lastAmount;
 }
 
 void CWorldModel::setBallHandler(int num){

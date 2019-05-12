@@ -7,7 +7,7 @@
 #include <cornell/Trajectory.h>
 #include <RobotCapability.h>
 #include <CMmotion.h>
-
+#include "NormalPlayUtils.h"
 #include <RobotSensor.h>
 #include "utils.h"
 #include "ShootRangeList.h"

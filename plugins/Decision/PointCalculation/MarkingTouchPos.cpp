@@ -12,11 +12,10 @@
 #include "BallSpeedModel.h"
 #include <GDebugEngine.h>
 #include "PlayInterface.h"
-#include "NormalPlayUtils.h"
 #include "WorldModel.h"
 #include "BestPlayer.h"
 #include "Global.h"
-
+#include "SkillUtils.h"
 namespace
 {
 	//2.轨迹生成算法使用变量
@@ -167,7 +166,7 @@ CGeoPoint CMarkingTouchPos::caculMarkingTouchPos(int areaNum,CGeoPoint leftUpPos
 	//}
 
 	if (state(areaNum)!=Touch){
-		_kickEnemyNum=NormalPlayUtils::getTheirMostClosetoPos(vision,ball.Pos());
+        _kickEnemyNum=ZSkillUtils::instance()->getTheirBestPlayer();
 		_markEnemyNum[areaNum]=markEnemyNum;
 	}
 	const PlayerVisionT kickEnemy=vision->TheirPlayer(_kickEnemyNum);

@@ -11,7 +11,6 @@
 #include "DefPos2015.h"
 #include "TandemPos.h"
 #include "ChipBallJudge.h"
-#include "gpuBestAlgThread.h"
 #include "BestPlayer.h"
 #include "defence/DefenceInfo.h"
 #include "IndirectDefender.h"
@@ -27,7 +26,6 @@ extern CDribbleStatus* dribbleStatus;
 extern CGDebugEngine*  debugEngine;
 extern CWorldModel*	   world;
 extern CKickDirection* kickDirection;
-extern CGPUBestAlgThread* bestAlg;
 extern CDefPos2015* defPos2015;
 extern CTandemPos* tandemPos;
 extern CBestPlayer* bestPlayer;

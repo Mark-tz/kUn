@@ -1,6 +1,5 @@
 #include "OptionModule.h"
 #include <param.h>
-#include <weerror.h>
 #include "WorldModel.h"
 #include "parammanager.h"
 

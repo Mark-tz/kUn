@@ -1,5 +1,4 @@
 #include "FreeKickUtils.h"
-#include "gpuBestAlgThread.h"
 #include "TaskMediator.h"
 #include "Global.h"
 #include "WorldModel.h"

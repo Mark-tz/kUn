@@ -16,7 +16,6 @@
 #include "WaitKickPos.h"
 #include "TouchKickPos.h"
 #include "MarkingTouchPos.h"
-#include "Neat.h"
 #include <QString>
 
 #ifndef _WIN32
@@ -1092,24 +1091,6 @@ extern "C" int Skill_InterceptTouch(lua_State* L) {
 	return 0;
 }
 
-// for train
-extern "C" int FUNC_GetNeatPos(lua_State* L) {
-    int runner = LuaModule::Instance()->GetNumberArgument(1, NULL);
-    CGeoPoint p = Neat::Instance()->GetPosition(vision, runner);
-//    std::cout << "In LuaModule.cpp, x: " << p.x() << ", y: " << p.y() << std::endl;
-    LuaModule::Instance()->PushNumber(p.x());
-    LuaModule::Instance()->PushNumber(p.y());
-    return 2;
-}
-
-// for train
-extern "C" int FUNC_GetNeatDir(lua_State* L) {
-    int runner = LuaModule::Instance()->GetNumberArgument(1, NULL);
-    double dir = Neat::Instance()->GetDirection(vision, runner);
-    LuaModule::Instance()->PushNumber(dir);
-    return 1;
-}
-
 extern "C" int Skill_GoAndTurnKickV4(lua_State* L){
     double runner = LuaModule::Instance()->GetNumberArgument(1, 0.0);
     double x      = LuaModule::Instance()->GetNumberArgument(2, 0.0);
@@ -1139,25 +1120,6 @@ extern "C" int Skill_CmuTurnKickV1(lua_State* L){
     CGeoPoint pos = CGeoPoint(x, y);
     CPlayerTask* pTask = PlayerRole::makeItCmuTurnKickV1(runner_int, pos,
                                                          flag_int, power, dir);
-    TaskMediator::Instance()->setPlayerTask(runner_int, pTask, 1);
-    return 0;
-}
-
-extern "C" int Skill_ZPassV2(lua_State* L){
-    double runner = LuaModule::Instance()->GetNumberArgument(1, 0.0);
-    double x      = LuaModule::Instance()->GetNumberArgument(2, 0.0);
-    double y      = LuaModule::Instance()->GetNumberArgument(3, 0.0);
-    double wait_x = LuaModule::Instance()->GetNumberArgument(4, 0.0);
-    double wait_y = LuaModule::Instance()->GetNumberArgument(5, 0.0);
-    double power  = LuaModule::Instance()->GetNumberArgument(6, 0.0);
-    double dir    = LuaModule::Instance()->GetNumberArgument(7, 0.0);
-    double flag   = LuaModule::Instance()->GetNumberArgument(8, 0.0);
-    int runner_int = static_cast<int>( runner );
-    int flag_int   = static_cast<int>( flag );
-    CGeoPoint pos = CGeoPoint(x, y);
-    CGeoPoint waitpos = CGeoPoint( wait_x, wait_y );
-    CPlayerTask* pTask = PlayerRole::makeItZPassV2(runner_int, pos, waitpos,
-                                                   power, dir, flag_int);
     TaskMediator::Instance()->setPlayerTask(runner_int, pTask, 1);
     return 0;
 }
@@ -1225,10 +1187,7 @@ luaDef GUIGlue[] =
     {"CGetStrategyNum",     FUNC_GetStrategyNum},
     {"CInterceptTouch",     Skill_InterceptTouch},
     {"CPrintString",        FUNC_PrintString},
-    {"CGetNeatPos",         FUNC_GetNeatPos},
-    {"CGetNeatDir",         FUNC_GetNeatDir},
     {"CGoAndTurnKickV4",    Skill_GoAndTurnKickV4},
     {"CCmuTurnKickV1",      Skill_CmuTurnKickV1},
-    {"CZPassV2",            Skill_ZPassV2},
 	{NULL, NULL}
 };

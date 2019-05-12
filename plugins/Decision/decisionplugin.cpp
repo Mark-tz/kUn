@@ -12,13 +12,10 @@
 #endif
 
 #include <ServerInterface.h>
-#include <weerror.h>
 #include <WorldModel.h>
 #include "DecisionModule.h"
-#include <VisionReceiver.h>
 
 #include <GDebugEngine.h>
-#include "gpuBestAlgThread.h"
 #include "Global.h"
 #include "DefendUtils.h"
 #include "Compensate.h"
@@ -30,9 +27,8 @@
 #include "zsplugin.hpp"
 #include "RefereeBoxIf.h"
 #include "ActionModule.h"
-
+#include "MultiThread.h"
 #include "vision_detection.pb.h"
-
 /*! \mainpage Zeus - Run for number one
 *
 * \section Introduction
@@ -50,30 +46,9 @@
 *
 * etc...
 */
-
-extern std::mutex *decisionMutex;
 /// <summary> For GPU. </summary>
-std::mutex* _best_visiondata_copy_mutex = 0;
-std::mutex* _value_getter_mutex = 0;
-
 using Param::Latency::TOTAL_LATED_FRAME;
 
-bool VERBOSE_MODE = true;
-bool IS_SIMULATION = false;
-bool wireless_off = false;
-bool record_run_pos_on = false;
-namespace {
-Semaphore new_vision_event;
-
-COptionModule *option;
-VisionReceiver *receiver;
-CDecisionModule *decision;
-CActionModule *action;
-CServerInterface::VisualInfo visionInfo;
-std::mutex visionInfoMutex;
-RefRecvMsg refRecvMsg;
-// for receive from Kun Framework
-}
 
 DecisionPlugin::DecisionPlugin(bool ifYellow,bool ifRight){
     declare_publish("zss_cmds");
@@ -83,27 +58,22 @@ DecisionPlugin::DecisionPlugin(bool ifYellow,bool ifRight){
 }
 DecisionPlugin::~DecisionPlugin(){}
 void DecisionPlugin::run(){
-    qDebug() << "decision start";
+    cout << "decision start";
     std::thread vision_thread([=]{ getVision(); });
-
     ZSData commands_data;
-
 #ifdef USE_PYTHON_MODULE
     PythonModule::instance();
 #endif
     ZSS::ZParamManager::instance()->loadParam(IS_SIMULATION, "Alert/IsSimulation", false);
     initializeSingleton();
     CCommandInterface::instance(option);
-    receiver = VisionReceiver::instance(option);
     decision = new CDecisionModule(vision);
     action = new CActionModule(vision, decision);
     vision->registerOption(option);
     WORLD_MODEL->registerVision(vision);
     _best_visiondata_copy_mutex = new std::mutex();
     _value_getter_mutex = new std::mutex();
-    GPUBestAlgThread::Instance()->initialize(VisionModule::Instance());
     CollisionDetect::Instance()->initialize(VisionModule::Instance());
-//    RefereeBoxInterface::Instance(option);
 #ifdef USE_CUDA_MODULE
     ZCUDAModule::instance()->initialize(VisionModule::Instance());
 #endif
@@ -114,7 +84,6 @@ void DecisionPlugin::run(){
         vision->SetRefRecvMsg(refRecvMsg);
         vision->SetNewVision(visionInfo);
         visionInfoMutex.unlock();
-        decisionMutex->lock();
 #ifdef USE_PYTHON_MODULE
         PythonModule::instance()->run();
 #endif
@@ -125,7 +94,6 @@ void DecisionPlugin::run(){
         // 实物模式设定模式进行指令下发
         CCommandInterface::instance()->sendCommands(commands_data);
         publish("zss_cmds",commands_data.data(),commands_data.size());
-        decisionMutex->unlock();
         GDebugEngine::Instance()->send(option->MyColor() == TEAM_BLUE);
 	}
 }
