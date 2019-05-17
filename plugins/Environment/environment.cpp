@@ -17,7 +17,12 @@ Environment::Environment(unsigned int port):Environment(){
     vision_sender = new UDPSender("ssl_vision","224.5.23.2",port);
     sim->link(vision_sender,"ssl_vision");
 }
-Environment::~Environment(){}
+Environment::~Environment(){
+    delete vm;
+    delete dm_blue_left;
+    delete c2s_blue;
+    delete vision_sender;
+}
 void Environment::start_all(){
     sim->start();
     vm->start();
@@ -30,7 +35,17 @@ void Environment::reset(){
 
 }
 void Environment::render(){}
-void Environment::step(){
-    std::cout << "in step function " << std::endl;
+int* Environment::step(int* arr,int size){
+    std::cout << "array input : [";
+    for(int i=0;i<size;i++){
+        std::cout << arr[i] << ' ';
+    }
+    std::cout << ']' << std::endl;
+
+    int* val = new int[5];
+    for(int i=0;i<5;i++){
+        val[i] = 5-i;
+    }
+    return val;
 }
 void Environment::run(){}

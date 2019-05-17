@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.9)
 project(Kun LANGUAGES CXX)
 
-set(BUILD_PYTHON_PLUGINS false)
+if(BUILD_PYTHON)
+	message("BUILD_PYTHON : true")
+	set(BUILD_PYTHON_PLUGINS true)
+else()
+	message("BUILD_PYTHON : false")
+	set(BUILD_PYTHON_PLUGINS false)
+endif()
 
 find_package(Protobuf REQUIRED)
 function(get_pb_file H CPP)

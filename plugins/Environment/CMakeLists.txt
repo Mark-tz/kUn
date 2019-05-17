@@ -1,31 +1,48 @@
 # Environment
 set(libs)
 # Qt5
-find_package(Qt5 COMPONENTS Core Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Network Gui REQUIRED)
 list(APPEND PROJECT_INCLUDE_DIRS
 	${Qt5Core_INCLUDE_DIRS}
 	${Qt5Network_INCLUDE_DIRS}
+	${Qt5Gui_INCLUDE_DIRS}
 )
-# list(APPEND libs Qt5::Core Qt5::Network)
+list(APPEND libs Qt5::Core Qt5::Network Qt5::Gui)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
+list(APPEND PROJECT_INCLUDE_DIRS
+	${OPENGL_INCLUDE_DIR})
 
 # Protobuf
 find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
+list(APPEND PROJECT_INCLUDE_DIRS
+	${PROTOBUF_INCLUDE_DIRS})
 # list(APPEND libs ${PROTOBUF_LIBRARIES})
 
 # ODE
 find_package(ODE REQUIRED)
-include_directories(${ODE_INCLUDE_DIRS})
+list(APPEND PROJECT_INCLUDE_DIRS
+	${ODE_INCLUDE_DIRS})
 # list(APPEND libs ${ODE_LIBRARIES})
 # add_definitions(-DdDOUBLE)
 
+# lua51
+find_package(Lua REQUIRED)
+list(APPEND PROJECT_INCLUDE_DIRS
+	${LUA_INCLUDE_DIR})
+list(APPEND libs ${LUA_LIBRARIES})
+
+# tolua++
+find_package(toluapp REQUIRED)
+list(APPEND PROJECT_INCLUDE_DIRS
+	${TOLUAPP_INCLUDE_DIR})
+list(APPEND libs ${TOLUAPP_LIBRARIES})
+
 # Protobuf
 find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
+list(APPEND PROJECT_INCLUDE_DIRS
+	${PROTOBUF_INCLUDE_DIRS})
 # list(APPEND libs ${PROTOBUF_LIBRARIES})
 
 set(PROTO_LIST
@@ -80,9 +97,9 @@ list(APPEND PROJECT_INCLUDE_DIRS
 )
 include_directories(${PROJECT_INCLUDE_DIRS})
 
-# file(GLOB CPPFILES 
-# 	"${CMAKE_SOURCE_DIR}/Utils/*.cpp"
-# )
+file(GLOB CPPFILES 
+	# "${CMAKE_SOURCE_DIR}/Utils/*.cpp"
+)
 
 set(EXPORT_HEADERS
 	environment.h
@@ -130,12 +147,12 @@ if(BUILD_PYTHON_PLUGINS)
 	   LANGUAGE_STANDARD "17"
 	   GENERATE_OPTIONS "-D__PIC__;-Wno-macro-redefined"
 	   INCLUDE_DIRS ${PROJECT_INCLUDE_DIRS}
-	   LINK_LIBRARIES ${target_lib}
+	   LINK_LIBRARIES ${target_lib} ${libs}
 	   H_DIRS ${PROJECT_INCLUDE_DIRS}
 	   H_FILES ${EXPORT_HEADERS})
 endif()
 
-target_link_libraries(${target_lib} ${libs})
+target_link_libraries(${target_lib} LINK_PUBLIC ${libs} zss_plugin)
 
 install(TARGETS ${target_lib}
     LIBRARY DESTINATION lib

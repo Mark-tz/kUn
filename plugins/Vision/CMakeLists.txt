@@ -74,7 +74,7 @@ if(BUILD_PYTHON_PLUGINS)
 	   H_FILES ${EXPORT_HEADERS})
 endif()
 
-target_link_libraries(${target_lib} ${libs})
+target_link_libraries(${target_lib} ${libs} zss_plugin)
 
 install(TARGETS ${target_lib}
     LIBRARY DESTINATION lib

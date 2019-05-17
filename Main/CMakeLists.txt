@@ -53,6 +53,7 @@ set(zss_lib
     zss_cmd2sim
     zss_udpsender
     zss_udpreceiver
+    zss_env
 )
 
 

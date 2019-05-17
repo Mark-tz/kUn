@@ -22,9 +22,9 @@ set(PROJECT_INCLUDE_DIRS
 )
 include_directories(${PROJECT_INCLUDE_DIRS})
 
-file(GLOB CPPFILES
-	"${CMAKE_SOURCE_DIR}/Utils/*.cpp"
-)
+# file(GLOB CPPFILES
+# 	"${CMAKE_SOURCE_DIR}/Utils/*.cpp"
+# )
 
 set(EXPORT_HEADERS
 	cmd2sim.h
@@ -40,9 +40,8 @@ set(SRC
 	${SOURCES}
 	${PROTO_CPP}
 	${PROTO_H}
-	${CPPFILES}
+	# ${CPPFILES}
 )
-
 set(target_lib zss_cmd2sim)
 
 if(BUILD_PYTHON_PLUGINS)
@@ -66,7 +65,7 @@ if(BUILD_PYTHON_PLUGINS)
 	   H_DIRS ${PROJECT_INCLUDE_DIRS}
 	   H_FILES ${EXPORT_HEADERS})
 endif()
-target_link_libraries(${target_lib} ${libs})
+target_link_libraries(${target_lib} ${libs} zss_plugin)
 
 install(TARGETS ${target_lib}
     LIBRARY DESTINATION lib

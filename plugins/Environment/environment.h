@@ -15,7 +15,7 @@ public:
     ~Environment();
     void reset();
     void render();
-    void step();
+    int* step(int*,int);
     void run();
 private:
     void start_all();

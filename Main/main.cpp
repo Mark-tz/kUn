@@ -1,11 +1,10 @@
 #include <iostream>
 #include <thread>
 #include "dllexport.h"
-
+#include <Environment/environment.h>
 using namespace std;
 int main(){
-    while(true){
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
+    Environment env(10666);
+    env.step(nullptr,0);
 	return 0;
 }
