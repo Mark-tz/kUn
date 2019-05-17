@@ -18,7 +18,6 @@ namespace{
 Cmd2Sim::Cmd2Sim(bool isTeamYellow):isTeamYellow(isTeamYellow){
     declare_receive("zss_cmds");
     declare_publish("sim_packet");
-    declare_publish("sim_signal");
 }
 void Cmd2Sim::run(){
     ZSData data,sendData;
@@ -30,8 +29,6 @@ void Cmd2Sim::run(){
         sim_cmds->Clear();
         sim_cmds->set_timestamp(0);
         sim_cmds->set_isteamyellow(isTeamYellow);
-
-        publish("sim_signal");
         // receive & parse with `ZSData`
         receive("zss_cmds",data);
         zss_cmds.ParseFromArray(data.data(),data.size());

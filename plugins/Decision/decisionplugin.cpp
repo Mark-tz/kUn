@@ -58,7 +58,7 @@ DecisionPlugin::DecisionPlugin(bool ifYellow,bool ifRight){
 }
 DecisionPlugin::~DecisionPlugin(){}
 void DecisionPlugin::run(){
-    cout << "decision start";
+    cout << "decision plugin start!" << endl;
     std::thread vision_thread([=]{ getVision(); });
     ZSData commands_data;
 #ifdef USE_PYTHON_MODULE

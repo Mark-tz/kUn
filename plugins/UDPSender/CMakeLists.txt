@@ -1,4 +1,4 @@
-# DecisionModule
+# UDPSender
 set(libs)
 # Qt5
 find_package(Qt5 COMPONENTS Core Network REQUIRED)
