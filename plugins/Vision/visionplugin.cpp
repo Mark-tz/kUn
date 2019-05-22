@@ -1,5 +1,6 @@
 #include "visionplugin.h"
 #include "staticparams.h"
+#include "setthreadname.h"
 VisionPlugin::VisionPlugin() {
     declare_receive("ssl_vision");
     declare_publish("sim_signal");
@@ -103,6 +104,7 @@ void VisionPlugin::encodeMessage(Vision_DetectionFrame &detectionFrame, OriginMe
 
 
 void VisionPlugin::run() {
+    SetThreadName("VisionPlugin");
     std::cout << "Vision plugin start!" << std::endl;
     ZSData data,sendData;
     SSL_WrapperPacket packet;
@@ -123,7 +125,5 @@ void VisionPlugin::run() {
         detectionFrame.SerializeToArray(sendData.ptr(), size);
         publish("zss_vision", sendData.ptr(), size);
         detectionFrame.Clear();
-
-        std::this_thread::sleep_for(std::chrono::microseconds(2000));
     }
 }

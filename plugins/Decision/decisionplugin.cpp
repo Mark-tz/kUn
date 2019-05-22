@@ -29,6 +29,7 @@
 #include "ActionModule.h"
 #include "MultiThread.h"
 #include "vision_detection.pb.h"
+#include "setthreadname.h"
 /*! \mainpage Zeus - Run for number one
 *
 * \section Introduction
@@ -58,6 +59,7 @@ DecisionPlugin::DecisionPlugin(bool ifYellow,bool ifRight){
 }
 DecisionPlugin::~DecisionPlugin(){}
 void DecisionPlugin::run(){
+    SetThreadName("DecisionPlugin");
     cout << "decision plugin start!" << endl;
     std::thread vision_thread([=]{ getVision(); });
     ZSData commands_data;
@@ -94,7 +96,7 @@ void DecisionPlugin::run(){
         // 实物模式设定模式进行指令下发
         CCommandInterface::instance()->sendCommands(commands_data);
         publish("zss_cmds",commands_data.data(),commands_data.size());
-        GDebugEngine::Instance()->send(option->MyColor() == TEAM_BLUE);
+//        GDebugEngine::Instance()->send(option->MyColor() == TEAM_BLUE);
 	}
 }
 namespace{

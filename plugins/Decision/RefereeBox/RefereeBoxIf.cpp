@@ -84,10 +84,7 @@ void RefereeBoxInterface::receivingLoop() {
             const SSL_Referee_TeamInfo& yellow = ssl_referee.yellow();
             const SSL_Referee_TeamInfo& blue = ssl_referee.blue();
             long long stage_time_left = 0;
-            if (ssl_referee.has_stage_time_left())
-            {
-                stage_time_left = ssl_referee.stage_time_left();
-            }
+            stage_time_left = ssl_referee.stage_time_left();
             char cmd;
             struct stGamePacket pCmd_temp;
             unsigned char cmd_index = 0;

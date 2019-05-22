@@ -67,6 +67,9 @@ public:
     virtual void store(const void* const data,unsigned long size){
         std::unique_lock<std::shared_mutex> lock(_mutex);
         resize(size);
+        if(size > 40000){
+            std::cerr << "size too large, maybe forget to clear?" << std::endl;
+        }
         memcpy(_data,data,size);
     }
     // thread-unsafe

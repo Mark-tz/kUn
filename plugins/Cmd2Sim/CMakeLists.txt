@@ -7,7 +7,7 @@ list(APPEND libs Qt5::Core)
 # Protobuf
 find_package(Protobuf REQUIRED)
 list(APPEND PROJECT_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
-list(APPEND libs ${PROTOBUF_LIBRARIES})
+list(APPEND libs ${Protobuf_LIBRARIES})
 
 set(PROTO_LIST
 	zss_cmd

@@ -1,51 +1,142 @@
 #include "environment.h"
+#include <random>
+#include "grSim_Packet.pb.h"
+#include "vision_detection.pb.h"
+namespace {
+bool outside(const CGeoPoint& pos){
+    return pos.x()>5000||pos.x()<-5000||pos.y()>4000||pos.y()<-4000;
+}
+double remap(const unsigned int origin_min,const unsigned int origin_max,const double target_min,const double target_max,const double input){
+    const double a = double(origin_min);
+    const double b = double(origin_max);
+    const double c = target_min;
+    const double d = target_max;
+    return input*(d-c)/(b-a)+(b*c-d*a)/(b-a);
+}
+}
 Environment::Environment()
     :sim(SSLWorld::instance())
     ,vm(new VisionPlugin())
-    ,dm_blue_left(new DecisionPlugin(false,false))
+//    ,dm_blue_left(new DecisionPlugin(false,false))
     ,c2s_blue(new Cmd2Sim(false))
     ,vision_sender(nullptr){
     declare_publish("sim_signal");
+    declare_publish("sim_packet");
+    declare_publish("zss_cmds");
+    declare_receive("zss_vision");
 
     sim->link(vm,"ssl_vision");
-    vm->link(dm_blue_left,"zss_vision");
-    dm_blue_left->link(c2s_blue,"zss_cmds");
+//    vm->link(dm_blue_left,"zss_vision");
+    vm->link(this,"zss_vision");
+//    dm_blue_left->link(c2s_blue,"zss_cmds");
     c2s_blue->link(sim,"sim_packet");
     this->link(sim,"sim_signal");
+    this->link(sim,"sim_packet");
+//    dm_blue_left->link(this,"zss_cmds");
 }
 Environment::Environment(unsigned int port):Environment(){
     vision_sender = new UDPSender("ssl_vision","224.5.23.2",port);
+    handle_receiver = new UDPReceiver("sim_packet",20011);
     sim->link(vision_sender,"ssl_vision");
+    handle_receiver->link(sim,"sim_packet");
 }
 Environment::~Environment(){
     delete vm;
-    delete dm_blue_left;
+//    delete dm_blue_left;
     delete c2s_blue;
     delete vision_sender;
+    delete handle_receiver;
 }
 void Environment::start_all(){
     sim->start();
     vm->start();
-    dm_blue_left->start();
+//    dm_blue_left->start();
     c2s_blue->start();
     if(vision_sender)
         vision_sender->start();
+    if(handle_receiver)
+        handle_receiver->start();
 }
-void Environment::reset(){
-
+FeedBack Environment::reset(){
+    static std::random_device rd;
+    static double static_action[2] = {0.0,0.0};
+    setRobot(0,false,-2,0);
+//    target.setX(remap(rd.min(),rd.max(),-5.0,5.0,double(rd())));
+//    target.setY(remap(rd.min(),rd.max(),-5.0,5.0,double(rd())));
+    target.fill(0,0);
+    cycle = 0;
+    return this->step(static_action,2);
 }
 void Environment::render(){}
-int* Environment::step(int* arr,int size){
-    std::cout << "array input : [";
-    for(int i=0;i<size;i++){
-        std::cout << arr[i] << ' ';
+FeedBack Environment::step(double* arr,int size){
+    cycle++;
+    static FeedBack fb;
+    if(size != 2){
+        std::cout << "in step function : action dimention not correct : " << size << std::endl;
+        return {{0.0,0.0},0.0,true};
     }
-    std::cout << ']' << std::endl;
-
-    int* val = new int[5];
-    for(int i=0;i<5;i++){
-        val[i] = 5-i;
-    }
-    return val;
+    sendAction({arr[0],arr[1]});
+    publish("sim_signal");
+    getState(fb);
+    return fb;
 }
 void Environment::run(){}
+void Environment::setRobot(int id,bool team,double x,double y,double dir,bool turnon){
+    static ZSData data;
+    static grSim_Packet packet;
+    auto* replacement = packet.mutable_replacement();
+    auto* robot = replacement->add_robots();
+    robot->set_x(x);
+    robot->set_y(y);
+    robot->set_id(id);
+    robot->set_dir(dir);
+    robot->set_yellowteam(team);
+    robot->set_turnon(turnon);
+
+    data.resize(packet.ByteSize());
+    packet.SerializeToArray(data.ptr(),packet.ByteSize());
+    publish("sim_packet",data);
+    packet.Clear();
+}
+void Environment::getState(FeedBack& feedback){
+    static ZSData data;
+    static Vision_DetectionFrame frame;
+    static CGeoPoint pos;
+    static double dir;
+    receive("zss_vision",data);
+    frame.ParseFromArray(data.data(),data.size());
+    int size = frame.robots_blue_size();
+    if(size != 1){
+        std::cout << "in getState function : robot size not correct : " << size << std::endl;
+        return;
+    }
+    auto robot = frame.robots_blue(0);
+    pos.fill(robot.x(),robot.y());
+    dir = robot.orientation();
+    auto target_dir = (target-pos).dir();
+    auto target_dist = (target-pos).mod();
+    feedback.reward = -target_dist;
+    feedback.done = (cycle > 3000 || outside(pos) || target_dist < 10);
+    feedback.state[0] = target_dist/7000.0;
+    feedback.state[1] = target_dir-dir;
+}
+void Environment::sendAction(const Action& action){
+    static ZSData data;
+    static grSim_Packet packet;
+    auto* cmds = packet.mutable_commands();
+    cmds->set_isteamyellow(false);
+    cmds->set_timestamp(0.0);
+    auto* cmd = cmds->add_robot_commands();
+    cmd->set_id(0);
+    cmd->set_kickspeedx(0);
+    cmd->set_kickspeedz(0);
+    cmd->set_veltangent(action[0]);
+    cmd->set_velnormal(0);
+    cmd->set_velangular(action[1]);
+    cmd->set_spinner(false);
+    cmd->set_wheelsspeed(false);
+    data.resize(packet.ByteSize());
+    packet.SerializeToArray(data.ptr(),packet.ByteSize());
+    publish("sim_packet",data);
+    packet.Clear();
+}

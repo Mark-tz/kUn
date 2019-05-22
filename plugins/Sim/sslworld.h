@@ -29,6 +29,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "robot.h"
 #include "messages_robocup_ssl_wrapper.pb.h"
 #include <string>
+#include <QMutex>
 #include "zsplugin.hpp"
 #include "dllexport.h"
 #define WALL_COUNT 10
@@ -45,6 +46,7 @@ class SSLWorld : public QObject,public ZSPlugin
 {
     Q_OBJECT
 private:
+    QMutex ode_mutex;
     int framenum;
     dReal last_dt;
     QList<SendingPacket*> sendQueue;

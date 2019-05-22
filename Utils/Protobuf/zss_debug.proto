@@ -1,47 +1,47 @@
-syntax = "proto2";
+syntax = "proto3";
 
 message Point{
-	required float x = 1;
-	required float y = 2;
+	float x = 1;
+	float y = 2;
 }
 message Rectangle{
-	required Point point1 = 1;
-	required Point point2 = 2;
+	Point point1 = 1;
+	Point point2 = 2;
 }
 message Debug_Robot{
-	required Point pos = 1;
-	required float dir = 2;
+	Point pos = 1;
+	float dir = 2;
 }
 message Debug_Line {
-	required Point start = 1;
-	required Point end = 2;
-	required bool FORWARD = 3;
-	required bool BACK = 4;
+	Point start = 1;
+	Point end = 2;
+	bool FORWARD = 3;
+	bool BACK = 4;
 }
 message Debug_Arc {
-	required Rectangle rectangle = 1;
-	required float start = 2;
-	required float end = 3;
-	required bool FILL = 4;
+	Rectangle rectangle = 1;
+	float start = 2;
+	float end = 3;
+	bool FILL = 4;
 }
 message Debug_Polygon {
 	repeated Point vertex = 1;
-	required bool FILL = 2;
+	bool FILL = 2;
 }
 message Debug_Text {
-	required Point pos = 1;
-	required string text = 2;
+	Point pos = 1;
+	string text = 2;
 }
 message Debug_Curve_ {
-	required float num = 1;
-	required float maxLimit = 2;
-	required float minLimit = 3;
+	float num = 1;
+	float maxLimit = 2;
+	float minLimit = 3;
 }
 message Debug_Curve {
-	required Point start = 1;
-	required Point p1 = 2;
-	required Point p2 = 3;
-	required Point end = 4;
+	Point start = 1;
+	Point p1 = 2;
+	Point p2 = 3;
+	Point end = 4;
 }
 message Debug_Points {
 	repeated Point point = 1;
@@ -56,7 +56,7 @@ message Debug_Msg {
 		POLYGON = 5;
 		Points   = 6;
 	}
-	required Debug_Type type = 1;
+	Debug_Type type = 1;
 	enum Color {
 		WHITE = 	0;
 		RED = 		1;
@@ -69,15 +69,15 @@ message Debug_Msg {
 		GRAY = 		8;
 		BLACK = 	9;
 	}
-	required Color color = 2;
+	Color color = 2;
 	// one of the follow >>> need to be tested with TYPE <oneof> 
-	optional Debug_Arc arc = 	3;
-	optional Debug_Line line = 	4;
-	optional Debug_Text text = 	5;
-	optional Debug_Robot robot = 	6;
-	optional Debug_Curve_ curve = 	7;
-	optional Debug_Polygon polygon = 8;
-	optional Debug_Points points = 9;
+	Debug_Arc arc = 	3;
+	Debug_Line line = 	4;
+	Debug_Text text = 	5;
+	Debug_Robot robot = 	6;
+	Debug_Curve_ curve = 	7;
+	Debug_Polygon polygon = 8;
+	Debug_Points points = 9;
 }
 message Debug_Msgs{
 	repeated Debug_Msg msgs= 1;

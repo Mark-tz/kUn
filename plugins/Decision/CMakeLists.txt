@@ -34,7 +34,7 @@ list(APPEND libs Qt5::Core Qt5::Network)
 # Protobuf
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
-list(APPEND libs ${PROTOBUF_LIBRARIES})
+list(APPEND libs ${Protobuf_LIBRARIES})
 
 set(PROTO_LIST
 	game_event

@@ -23,7 +23,7 @@ add_definitions(-DdDOUBLE)
 # Protobuf
 find_package(Protobuf REQUIRED)
 list(APPEND PROJECT_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
-list(APPEND libs ${PROTOBUF_LIBRARIES})
+list(APPEND libs ${Protobuf_LIBRARIES})
 
 set(PROTO_LIST
 	game_event

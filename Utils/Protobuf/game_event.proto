@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 
 // a game event that caused a referee command
 message SSL_Referee_Game_Event {
@@ -77,7 +77,7 @@ message SSL_Referee_Game_Event {
     }
 
     // the game event type that happened
-    required GameEventType gameEventType = 1;
+    GameEventType gameEventType = 1;
 
     // a team
     enum Team {
@@ -88,13 +88,13 @@ message SSL_Referee_Game_Event {
 
     // information about an originator
     message Originator {
-        required Team team = 1;
-        optional uint32 botId = 2;
+        Team team = 1;
+        uint32 botId = 2;
     }
 
     // the team and optionally a designated robot that is the originator of the game event
-    optional Originator originator = 2;
+    Originator originator = 2;
 
     // a message describing further details of this game event
-    optional string message = 3;
+    string message = 3;
 }

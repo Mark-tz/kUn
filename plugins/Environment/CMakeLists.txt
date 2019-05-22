@@ -18,7 +18,7 @@ list(APPEND PROJECT_INCLUDE_DIRS
 find_package(Protobuf REQUIRED)
 list(APPEND PROJECT_INCLUDE_DIRS
 	${PROTOBUF_INCLUDE_DIRS})
-# list(APPEND libs ${PROTOBUF_LIBRARIES})
+# list(APPEND libs ${Protobuf_LIBRARIES})
 
 # ODE
 find_package(ODE REQUIRED)
@@ -43,7 +43,7 @@ list(APPEND libs ${TOLUAPP_LIBRARIES})
 find_package(Protobuf REQUIRED)
 list(APPEND PROJECT_INCLUDE_DIRS
 	${PROTOBUF_INCLUDE_DIRS})
-# list(APPEND libs ${PROTOBUF_LIBRARIES})
+# list(APPEND libs ${Protobuf_LIBRARIES})
 
 set(PROTO_LIST
 	game_event
