@@ -1,22 +1,22 @@
-syntax = "proto3";
+syntax = "proto2";
 message grSim_Robot_Command {
-uint32 id = 1;
-float kickspeedx = 2;
-float kickspeedz = 3;
-float veltangent = 4;
-float velnormal  = 5;
-float velangular = 6;
-bool spinner = 7;
-bool wheelsspeed = 8;
-float wheel1 = 9;
-float wheel2 = 10;
-float wheel3 = 11;
-float wheel4 = 12;
+required uint32 id = 1;
+required float kickspeedx = 2;
+required float kickspeedz = 3;
+required float veltangent = 4;
+required float velnormal  = 5;
+required float velangular = 6;
+required bool spinner = 7;
+required bool wheelsspeed = 8;
+optional float wheel1 = 9;
+optional float wheel2 = 10;
+optional float wheel3 = 11;
+optional float wheel4 = 12;
 }
 
 message grSim_Commands {
-double timestamp = 1;
-bool isteamyellow = 2;
+required double timestamp = 1;
+required bool isteamyellow = 2;
 repeated grSim_Robot_Command robot_commands = 3;
 }
 

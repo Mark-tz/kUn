@@ -3,6 +3,7 @@ import time
 from rllite import SAC
 from env import Env
 
+
 # from rllite.common import choose_gpu, GymDelay
 
 # choose your GPU if you have more than one
@@ -24,6 +25,8 @@ model = SAC(
     save_eps_num = 100
 	)
 
+# model.learn(1e6)
+
 timesteps = 0
 total_timesteps = 1e6
 max_eps_steps = 500
@@ -36,7 +39,7 @@ while timesteps < total_timesteps:
     episode_reward = 0
     while not done and eps_steps < max_eps_steps:
         action = model.predict(obs)
-        new_obs, reward, done = model.env.step(action)
+        new_obs, reward, done, info = model.env.step(action)
         model.replay_buffer.push(obs, action, reward, new_obs, done)
         obs = new_obs
         eps_steps += 1
@@ -46,3 +49,5 @@ while timesteps < total_timesteps:
             model.train_step()
     model.episode_num += 1
     model.writer.add_scalar('episode_reward', episode_reward, model.episode_num)
+    if model.episode_num % 100 == 0:
+        model.save("./ckpt","manual_save")

@@ -5,7 +5,7 @@ import numpy as np
 from time import sleep
 from array import array
 import zss_env
-
+import sys
 class Env(gym.Env):
     def __init__(self):
         self.low_action = np.array([-1, -1])
@@ -16,6 +16,7 @@ class Env(gym.Env):
         self.environment.start_all()
         sleep(0.3)
     def step(self, action=[0,0]):
+        sleep(0.007)
         feedback = self.environment.step(array('d',[action[0],action[1]]),action.size)
         new_obs = feedback.state
         reward = feedback.reward

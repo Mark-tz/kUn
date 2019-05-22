@@ -2,6 +2,7 @@
 #include <random>
 #include "grSim_Packet.pb.h"
 #include "vision_detection.pb.h"
+#include "KunDebugEngine.h"
 namespace {
 bool outside(const CGeoPoint& pos){
     return pos.x()>5000||pos.x()<-5000||pos.y()>4000||pos.y()<-4000;
@@ -60,16 +61,25 @@ void Environment::start_all(){
 FeedBack Environment::reset(){
     static std::random_device rd;
     static double static_action[2] = {0.0,0.0};
-    setRobot(0,false,-2,0);
-//    target.setX(remap(rd.min(),rd.max(),-5.0,5.0,double(rd())));
-//    target.setY(remap(rd.min(),rd.max(),-5.0,5.0,double(rd())));
-    target.fill(0,0);
+
+    target.setX(remap(rd.min(),rd.max(),-4.0,4.0,double(rd())));
+    target.setY(remap(rd.min(),rd.max(),-4.0,4.0,double(rd())));
+//    target.fill(0,0);
+    DebugEngine::instance()->gui_debug_msg(CGeoPoint(100,100),QString("target : %1 %2").arg(target.x()).arg(-target.y()).toLatin1(),COLOR_RED);
+    DebugEngine::instance()->gui_debug_msg(CGeoPoint(target.x()*100,-target.y()*100),"TARGET");
+    DebugEngine::instance()->gui_debug_x(CGeoPoint(target.x()*100,-target.y()*100),COLOR_GRAY);
+    DebugEngine::instance()->send(true);
+    setBallAndRobot(target.x(),target.y(),0,false,-4,0);
     cycle = 0;
     return this->step(static_action,2);
 }
 void Environment::render(){}
 FeedBack Environment::step(double* arr,int size){
     cycle++;
+//    DebugEngine::instance()->gui_debug_msg(CGeoPoint(100,100),QString("target : %1 %2").arg(target.x()).arg(-target.y()).toLatin1(),COLOR_RED);
+//    DebugEngine::instance()->gui_debug_msg(CGeoPoint(target.x()*100,-target.y()*100),"TARGET");
+//    DebugEngine::instance()->gui_debug_x(CGeoPoint(target.x()*100,-target.y()*100),COLOR_GRAY);
+//    DebugEngine::instance()->send(true);
     static FeedBack fb;
     if(size != 2){
         std::cout << "in step function : action dimention not correct : " << size << std::endl;
@@ -81,17 +91,23 @@ FeedBack Environment::step(double* arr,int size){
     return fb;
 }
 void Environment::run(){}
-void Environment::setRobot(int id,bool team,double x,double y,double dir,bool turnon){
+void Environment::setBallAndRobot(double bx,double by,int id,bool team,double x,double y,double dir,bool turnon){
     static ZSData data;
     static grSim_Packet packet;
-    auto* replacement = packet.mutable_replacement();
-    auto* robot = replacement->add_robots();
+    auto replacement = packet.mutable_replacement();
+    auto robot = replacement->add_robots();
     robot->set_x(x);
     robot->set_y(y);
     robot->set_id(id);
     robot->set_dir(dir);
     robot->set_yellowteam(team);
     robot->set_turnon(turnon);
+
+    auto ball = replacement->mutable_ball();
+    ball->set_x(bx);
+    ball->set_y(by);
+    ball->set_vx(0);
+    ball->set_vy(0);
 
     data.resize(packet.ByteSize());
     packet.SerializeToArray(data.ptr(),packet.ByteSize());
@@ -115,7 +131,7 @@ void Environment::getState(FeedBack& feedback){
     dir = robot.orientation();
     auto target_dir = (target-pos).dir();
     auto target_dist = (target-pos).mod();
-    feedback.reward = -target_dist;
+    feedback.reward = (-target_dist)/10000.0 + (outside(pos)? -10 : 0) + (target_dist < 10 ? 100 : 0);
     feedback.done = (cycle > 3000 || outside(pos) || target_dist < 10);
     feedback.state[0] = target_dist/7000.0;
     feedback.state[1] = target_dir-dir;

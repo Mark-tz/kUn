@@ -4,7 +4,7 @@
 #include "zsplugin.hpp"
 #include "Sim/sslworld.h"
 #include "Vision/visionplugin.h"
-#include "Decision/decisionplugin.h"
+//#include "Decision/decisionplugin.h"
 #include "Cmd2Sim/cmd2sim.h"
 #include "UDPSender/udpsender.h"
 #include "UDPReceiver/udpreceiver.h"
@@ -39,7 +39,7 @@ private:
     UDPSender* vision_sender;
     UDPReceiver* handle_receiver;
 private:
-    void setRobot(int,bool,double,double,double dir = 0,bool turnon = true);
+    void setBallAndRobot(double,double,int,bool,double,double,double dir = 0,bool turnon = true);
 private:
     void getState(FeedBack& fb);
     void sendAction(const Action& action);

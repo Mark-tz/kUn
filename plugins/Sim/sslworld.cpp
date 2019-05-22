@@ -572,25 +572,26 @@ dReal normalizeAngle(dReal a)
 
 bool SSLWorld::visibleInCam(int id, double x, double y)
 {
-    if(id==-1) return true;
-    id %= 4;
-    if (id==0)
-    {
-        if (x>-0.2 && y>-0.2) return true;
-    }
-    if (id==1)
-    {
-        if (x>-0.2 && y<0.2) return true;
-    }
-    if (id==2)
-    {
-        if (x<0.2 && y<0.2) return true;
-    }
-    if (id==3)
-    {
-        if (x<0.2 && y>-0.2) return true;
-    }
-    return false;
+    return true;
+//    if(id==-1) return true;
+//    id %= 4;
+//    if (id==0)
+//    {
+//        if (x>-0.2 && y>-0.2) return true;
+//    }
+//    if (id==1)
+//    {
+//        if (x>-0.2 && y<0.2) return true;
+//    }
+//    if (id==2)
+//    {
+//        if (x<0.2 && y<0.2) return true;
+//    }
+//    if (id==3)
+//    {
+//        if (x<0.2 && y>-0.2) return true;
+//    }
+//    return false;
 }
 
 #define CONVUNIT(x) ((int)(1000*(x)))
@@ -855,7 +856,7 @@ void SSLWorld::sendVisionBuffer()
 //        delete packet;
 //        if (sendQueue.isEmpty()) break;
 //    }
-    publishPacket(-1);
+    publishPacket(0);
 }
 
 void RobotsFomation::setAll(dReal* xx,dReal *yy)

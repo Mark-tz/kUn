@@ -121,7 +121,7 @@ set(SRC
 set(zss_lib
 	zss_simulator
     zss_vision
-    zss_decision
+    # zss_decision
     zss_cmd2sim
     zss_udpsender
     zss_udpreceiver

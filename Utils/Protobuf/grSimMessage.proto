@@ -1,8 +1,8 @@
-syntax = "proto3";
+syntax = "proto2";
 
 package grSimMessage;
 
 message grSimInfo{
-	uint32 id = 1;
-	bool isInfrared = 2;
+	required uint32 id = 1;
+	optional bool isInfrared = 2;
 }
