@@ -17,7 +17,7 @@ struct FeedBack{
     double reward;
     bool done;
 };
-typedef std::array<double,2> Action;
+typedef std::array<double,3> Action;
 class Environment : public ZSPlugin{
 public:
 

@@ -14,6 +14,31 @@ double remap(const unsigned int origin_min,const unsigned int origin_max,const d
     const double d = target_max;
     return input*(d-c)/(b-a)+(b*c-d*a)/(b-a);
 }
+template<typename T>
+T limitRange(T value, T minValue, T maxValue) {
+    return value > maxValue ? maxValue : (value < minValue) ? minValue : value;
+}
+}
+double Normalize(double angle)
+{
+    if (fabs(angle) > 10 ){
+        std::cout<<angle<<" Normalize Error!!!!!!!!!!!!!!!!!!!!"<<std::endl;
+        return 0;
+    }
+    const double M_2PI = M_PI * 2;
+    // 快速粗调整
+    angle -= (int)(angle / M_2PI) * M_2PI;
+
+    // 细调整 (-PI,PI]
+    while( angle > M_PI ) {
+        angle -= M_2PI;
+    }
+
+    while( angle <= -M_PI ) {
+        angle += M_2PI;
+    }
+
+    return angle;
 }
 Environment::Environment()
     :sim(SSLWorld::instance())
@@ -60,7 +85,7 @@ void Environment::start_all(){
 }
 FeedBack Environment::reset(){
     static std::random_device rd;
-    static double static_action[2] = {0.0,0.0};
+    static double static_action[3] = {0.0,0.0,0.0};
 
     target.setX(remap(rd.min(),rd.max(),-2.0,2.0,double(rd())));
     target.setY(remap(rd.min(),rd.max(),-2.0,2.0,double(rd())));
@@ -71,7 +96,7 @@ FeedBack Environment::reset(){
     DebugEngine::instance()->send(true);
     setBallAndRobot(target.x(),target.y(),0,false,0,0);
     cycle = 0;
-    return this->step(static_action,2);
+    return this->step(static_action,3);
 }
 void Environment::render(){}
 FeedBack Environment::step(double* arr,int size){
@@ -81,11 +106,11 @@ FeedBack Environment::step(double* arr,int size){
 //    DebugEngine::instance()->gui_debug_x(CGeoPoint(target.x()*100,-target.y()*100),COLOR_GRAY);
 //    DebugEngine::instance()->send(true);
     static FeedBack fb;
-    if(size != 2){
+    if(size != 3){
         std::cout << "in step function : action dimention not correct : " << size << std::endl;
         return {{0.0,0.0},0.0,true};
     }
-    sendAction({arr[0],arr[1]});
+    sendAction({arr[0],arr[1],arr[2]});
     publish("sim_signal");
     getState(fb);
     return fb;
@@ -132,10 +157,10 @@ void Environment::getState(FeedBack& feedback){
     auto target_dir = (target-pos).dir();
     auto target_dist = (target-pos).mod();
     auto target_dist_max = (target-CGeoPoint(0,0)).mod();
-    feedback.reward = (-target_dist)/target_dist_max + (outside(pos)? -100 : 0) + (target_dist < 0.15 ? 1000 : 0);
-    feedback.done = (cycle > 3000 || outside(pos) || target_dist < 0.15);
+    feedback.reward = (-target_dist)/target_dist_max*2 + (target_dist < limitRange(target_dist_max*0.2,0.1,0.3) ? 2000 : 0);
+    feedback.done = (cycle > 500 || outside(pos) || target_dist < limitRange(target_dist_max*0.2,0.1,0.3));
     feedback.state[0] = target_dist/7.0;
-    feedback.state[1] = target_dir-dir;
+    feedback.state[1] = (target_dir-dir)/M_PI;
 }
 void Environment::sendAction(const Action& action){
     static ZSData data;
@@ -147,9 +172,9 @@ void Environment::sendAction(const Action& action){
     cmd->set_id(0);
     cmd->set_kickspeedx(0);
     cmd->set_kickspeedz(0);
-    cmd->set_veltangent(3*action[0]);
-    cmd->set_velnormal(0);
-    cmd->set_velangular(2*action[1]);
+    cmd->set_veltangent(2*action[0]);
+    cmd->set_velnormal(2*action[1]);
+    cmd->set_velangular(action[2]);
     cmd->set_spinner(false);
     cmd->set_wheelsspeed(false);
     data.resize(packet.ByteSize());

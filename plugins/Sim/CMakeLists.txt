@@ -18,7 +18,7 @@ list(APPEND libs Qt5::Core Qt5::Network Qt5::Gui)
 find_package(ODE REQUIRED)
 list(APPEND PROJECT_INCLUDE_DIRS ${ODE_INCLUDE_DIRS})
 list(APPEND libs ${ODE_LIBRARIES})
-add_definitions(-DdDOUBLE)
+# add_definitions(-DdDOUBLE)
 
 # Protobuf
 find_package(Protobuf REQUIRED)
