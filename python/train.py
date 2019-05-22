@@ -2,7 +2,7 @@ import rllite
 import time
 from rllite import SAC
 from env import Env
-
+import numpy as np
 
 # from rllite.common import choose_gpu, GymDelay
 
@@ -17,7 +17,7 @@ model = SAC(
     log_dir = "./log",
     buffer_size = 1e6,
     seed = 1,
-    max_episode_steps = 500, # manual set
+    max_episode_steps = 3000, # manual set
     batch_size = 64,
     discount = 0.99,
     learning_starts = 1000,
@@ -39,6 +39,7 @@ while timesteps < total_timesteps:
     episode_reward = 0
     while not done and eps_steps < max_eps_steps:
         action = model.predict(obs)
+        # action = (action + np.random.normal(0, 0.2, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
         new_obs, reward, done, info = model.env.step(action)
         model.replay_buffer.push(obs, action, reward, new_obs, done)
         obs = new_obs
@@ -47,7 +48,10 @@ while timesteps < total_timesteps:
         episode_reward += reward
         if timesteps > model.learning_starts :
             model.train_step()
+    if eps_steps < 5:
+        continue
     model.episode_num += 1
     model.writer.add_scalar('episode_reward', episode_reward, model.episode_num)
     if model.episode_num % 100 == 0:
-        model.save("./ckpt","manual_save")
+        print("markmarksavesave")
+        model.save("./ckpt","ssl_env")

@@ -5,7 +5,7 @@
 #include "KunDebugEngine.h"
 namespace {
 bool outside(const CGeoPoint& pos){
-    return pos.x()>5000||pos.x()<-5000||pos.y()>4000||pos.y()<-4000;
+    return pos.x()>4||pos.x()<-4||pos.y()>3||pos.y()<-3;
 }
 double remap(const unsigned int origin_min,const unsigned int origin_max,const double target_min,const double target_max,const double input){
     const double a = double(origin_min);
@@ -62,14 +62,14 @@ FeedBack Environment::reset(){
     static std::random_device rd;
     static double static_action[2] = {0.0,0.0};
 
-    target.setX(remap(rd.min(),rd.max(),-4.0,4.0,double(rd())));
-    target.setY(remap(rd.min(),rd.max(),-4.0,4.0,double(rd())));
+    target.setX(remap(rd.min(),rd.max(),-2.0,2.0,double(rd())));
+    target.setY(remap(rd.min(),rd.max(),-2.0,2.0,double(rd())));
 //    target.fill(0,0);
     DebugEngine::instance()->gui_debug_msg(CGeoPoint(100,100),QString("target : %1 %2").arg(target.x()).arg(-target.y()).toLatin1(),COLOR_RED);
     DebugEngine::instance()->gui_debug_msg(CGeoPoint(target.x()*100,-target.y()*100),"TARGET");
     DebugEngine::instance()->gui_debug_x(CGeoPoint(target.x()*100,-target.y()*100),COLOR_GRAY);
     DebugEngine::instance()->send(true);
-    setBallAndRobot(target.x(),target.y(),0,false,-4,0);
+    setBallAndRobot(target.x(),target.y(),0,false,0,0);
     cycle = 0;
     return this->step(static_action,2);
 }
@@ -127,13 +127,14 @@ void Environment::getState(FeedBack& feedback){
         return;
     }
     auto robot = frame.robots_blue(0);
-    pos.fill(robot.x(),robot.y());
+    pos.fill(robot.x()/1000.0,robot.y()/1000.0);
     dir = robot.orientation();
     auto target_dir = (target-pos).dir();
     auto target_dist = (target-pos).mod();
-    feedback.reward = (-target_dist)/10000.0 + (outside(pos)? -10 : 0) + (target_dist < 10 ? 100 : 0);
-    feedback.done = (cycle > 3000 || outside(pos) || target_dist < 10);
-    feedback.state[0] = target_dist/7000.0;
+    auto target_dist_max = (target-CGeoPoint(0,0)).mod();
+    feedback.reward = (-target_dist)/target_dist_max + (outside(pos)? -100 : 0) + (target_dist < 0.15 ? 1000 : 0);
+    feedback.done = (cycle > 3000 || outside(pos) || target_dist < 0.15);
+    feedback.state[0] = target_dist/7.0;
     feedback.state[1] = target_dir-dir;
 }
 void Environment::sendAction(const Action& action){
@@ -146,9 +147,9 @@ void Environment::sendAction(const Action& action){
     cmd->set_id(0);
     cmd->set_kickspeedx(0);
     cmd->set_kickspeedz(0);
-    cmd->set_veltangent(action[0]);
+    cmd->set_veltangent(3*action[0]);
     cmd->set_velnormal(0);
-    cmd->set_velangular(action[1]);
+    cmd->set_velangular(2*action[1]);
     cmd->set_spinner(false);
     cmd->set_wheelsspeed(false);
     data.resize(packet.ByteSize());
