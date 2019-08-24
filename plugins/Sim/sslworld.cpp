@@ -41,17 +41,18 @@ namespace{
     QUdpSocket *commandSocket;
     QUdpSocket *blueStatusSocket,*yellowStatusSocket;
 }
-DLL_EXPORT SSLWorld* _w;
 dReal randn_notrig(dReal mu=0.0, dReal sigma=1.0);
 dReal randn_trig(dReal mu=0.0, dReal sigma=1.0);
 dReal rand0_1();
 
-dReal fric(dReal f)
-{
+dReal fric(dReal f){
     if (f==-1) return dInfinity;
     return f;
 }
-
+SSLWorld& SSLWorld::instance(){
+    static SSLWorld instance;
+    return instance;
+}
 bool wheelCallBack(dGeomID o1,dGeomID o2,PSurface* s, int /*robots_count*/)
 {
     //s->id2 is ground
@@ -70,8 +71,8 @@ bool wheelCallBack(dGeomID o1,dGeomID o2,PSurface* s, int /*robots_count*/)
     }
 
     s->surface.mode = dContactFDir1 | dContactMu2  | dContactApprox1 | dContactSoftCFM;
-    s->surface.mu = fric(_w->cfg->robotSettings.WheelPerpendicularFriction);
-    s->surface.mu2 = fric(_w->cfg->robotSettings.WheelTangentFriction);
+    s->surface.mu = fric(SSLWorld::instance().cfg->robotSettings.WheelPerpendicularFriction);
+    s->surface.mu2 = fric(SSLWorld::instance().cfg->robotSettings.WheelTangentFriction);
     s->surface.soft_cfm = 0.002;
 
     dVector3 v={0,0,1,1};
@@ -88,46 +89,46 @@ bool wheelCallBack(dGeomID o1,dGeomID o2,PSurface* s, int /*robots_count*/)
 
 bool rayCallback(dGeomID o1,dGeomID o2,PSurface* s, int robots_count)
 {
-    if (!_w->updatedCursor) return false;
+    if (!SSLWorld::instance().updatedCursor) return false;
     dGeomID obj;
-    if (o1==_w->ray->geom) obj = o2;
+    if (o1==SSLWorld::instance().ray->geom) obj = o2;
     else obj = o1;
     for (int i=0;i<robots_count * 2;i++)
     {
-        if (_w->robots[i]->chassis->geom==obj || _w->robots[i]->dummy->geom==obj)
+        if (SSLWorld::instance().robots[i]->chassis->geom==obj || SSLWorld::instance().robots[i]->dummy->geom==obj)
         {
-            _w->robots[i]->selected = true;
-            _w->robots[i]->select_x = s->contactPos[0];
-            _w->robots[i]->select_y = s->contactPos[1];
-            _w->robots[i]->select_z = s->contactPos[2];
+            SSLWorld::instance().robots[i]->selected = true;
+            SSLWorld::instance().robots[i]->select_x = s->contactPos[0];
+            SSLWorld::instance().robots[i]->select_y = s->contactPos[1];
+            SSLWorld::instance().robots[i]->select_z = s->contactPos[2];
         }
     }
-    if (_w->ball->geom==obj)
+    if (SSLWorld::instance().ball->geom==obj)
     {
-        _w->selected = -2;
+        SSLWorld::instance().selected = -2;
     }
-    if (obj==_w->ground->geom)
+    if (obj==SSLWorld::instance().ground->geom)
     {
-        _w->cursor_x = s->contactPos[0];
-        _w->cursor_y = s->contactPos[1];
-        _w->cursor_z = s->contactPos[2];
+        SSLWorld::instance().cursor_x = s->contactPos[0];
+        SSLWorld::instance().cursor_y = s->contactPos[1];
+        SSLWorld::instance().cursor_z = s->contactPos[2];
     }
     return false;
 }
 
 bool ballCallBack(dGeomID o1,dGeomID o2,PSurface* s, int /*robots_count*/)
 {
-    if (_w->ball->tag!=-1) //spinner adjusting
+    if (SSLWorld::instance().ball->tag!=-1) //spinner adjusting
     {
         dReal x,y,z;
-        _w->robots[_w->ball->tag]->chassis->getBodyDirection(x,y,z);
+        SSLWorld::instance().robots[SSLWorld::instance().ball->tag]->chassis->getBodyDirection(x,y,z);
         s->fdir1[0] = x;
         s->fdir1[1] = y;
         s->fdir1[2] = 0;
         s->fdir1[3] = 0;
         s->usefdir1 = true;
         s->surface.mode = dContactMu2 | dContactFDir1 | dContactSoftCFM;
-        s->surface.mu = _w->cfg->BallFriction();
+        s->surface.mu = SSLWorld::instance().cfg->BallFriction();
         s->surface.mu2 = 0.5;
         s->surface.soft_cfm = 0.002;
     }
@@ -135,13 +136,11 @@ bool ballCallBack(dGeomID o1,dGeomID o2,PSurface* s, int /*robots_count*/)
 }
 
 SSLWorld::SSLWorld()
-    : QObject(nullptr)
 {
     declare_receive("sim_signal");
     declare_publish("ssl_vision");
     isGLEnabled = false;
-    customDT = -1;    
-    _w = this;
+    customDT = -1;
     cfg = new ConfigWidget();
     RobotsFomation *form1 = new RobotsFomation(1, cfg);
     RobotsFomation *form2 = form1;
@@ -313,6 +312,7 @@ SSLWorld::SSLWorld()
 }
 
 void SSLWorld::run(){
+    std::cout << "SSLWorld plugin start!" << std::endl;
     while(true){
         receive("sim_signal");
         this->step(this->cfg->DeltaTime());

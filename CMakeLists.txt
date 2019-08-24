@@ -44,3 +44,69 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(plugins)
 add_subdirectory(Main)
+
+# others
+
+# Qt5
+find_package(Qt5 COMPONENTS Core Network Gui REQUIRED)
+list(APPEND libs Qt5::Core Qt5::Network Qt5::Gui)
+
+set(srcs ${CMAKE_SOURCE_DIR}/Utils/ZSPlugin/zsplugin.hpp)
+add_library(zss_plugin SHARED ${srcs})
+target_link_libraries(zss_plugin ${libs})
+install(TARGETS zss_plugin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
+
+
+find_package(PythonInterp 3.6 REQUIRED)
+if (PYTHONINTERP_FOUND)
+  if (UNIX AND NOT APPLE)
+    if (PYTHON_VERSION_MAJOR EQUAL 3)
+        find_package(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+        find_package(PythonInterp 3)
+        find_package(PythonLibs 3 REQUIRED)
+    else()
+        find_package(Boost COMPONENTS python)
+        find_package(PythonInterp)
+        find_package(PythonLibs REQUIRED)
+    endif()
+  else()	
+    if (PYTHON_VERSION_MAJOR EQUAL 3)
+        find_package(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+        find_package(PythonInterp 3)
+        find_package(PythonLibs 3 REQUIRED)
+    else()
+        find_package(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+        find_package(PythonInterp)
+        find_package(PythonLibs REQUIRED)
+    endif()
+  endif()
+else()
+    message("Python not found")
+endif()
+
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
+
+enable_testing()
+include_directories(
+	${Boost_INCLUDE_DIRS}
+	${PYTHON_INCLUDE_DIRS}
+	${Qt5Core_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/Utils
+	${CMAKE_SOURCE_DIR}/Utils/ZSPlugin
+	${CMAKE_SOURCE_DIR}/plugins
+	${CMAKE_BINARY_DIR}/proto
+)
+set(zss_libs 
+	zss_simulator
+	zss_vision
+)
+link_libraries(${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${libs} ${zss_libs})
+
+python_add_module(zss_kun 
+	${CMAKE_SOURCE_DIR}/Main/zspython.cpp
+)

@@ -89,9 +89,7 @@ protected:
     void* _data;
     mutable std::shared_mutex _mutex;
 };
-class ZSSemaData:public ZSData,public Semaphore{
-
-};
+class ZSSemaData:public ZSData,public Semaphore{};
 class ZSPlugin{
 public:
     ZSPlugin(){}
