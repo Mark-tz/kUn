@@ -31,7 +31,7 @@ void KunDebugEngine::gui_debug_points(const std::vector<CGeoPoint> points, int d
     for (int i=0; i < points.size(); i++) {
         Point* point = debugPoints->add_point();
         point->set_x(points[i].x());
-        point->set_y(points[i].y());
+        point->set_y((-1.0)*points[i].y());
     }
 //    qDebug() << "point size: " << points.size();
     debugMutex.unlock();
@@ -44,9 +44,9 @@ void KunDebugEngine::gui_debug_line(const CGeoPoint& p1, const CGeoPoint& p2, in
     Debug_Line* line = msg->mutable_line();
     Point *pos1 = line->mutable_start(), *pos2 = line->mutable_end();
     pos1->set_x(p1.x());
-    pos1->set_y(p1.y());
+    pos1->set_y((-1.0)*p1.y());
     pos2->set_x(p2.x());
-    pos2->set_y(p2.y());
+    pos2->set_y((-1.0)*p2.y());
 	line->set_back(false);
     line->set_forward(false);
     debugMutex.unlock();
@@ -64,7 +64,7 @@ void KunDebugEngine::gui_debug_arc(const CGeoPoint& p, double r, double start_an
     Point *p1 = rec->mutable_point1(), *p2 = rec->mutable_point2();
     PosT center;
     center.x = p.x();
-    center.y = p.y();
+    center.y = (-1.0)*p.y();
 	p1->set_x(center.x - r);
 	p1->set_y(center.y - r);
 	p2->set_x(center.x + r);
@@ -81,11 +81,11 @@ void KunDebugEngine::gui_debug_triangle(const CGeoPoint& p1, const CGeoPoint& p2
     Point* pos2 = tri->add_vertex();
     Point* pos3 = tri->add_vertex();
     pos1->set_x(p1.x());
-    pos1->set_y(p1.y());
+    pos1->set_y((-1.0)*p1.y());
     pos2->set_x(p2.x());
-    pos2->set_y(p2.y());
+    pos2->set_y((-1.0)*p2.y());
     pos3->set_x(p3.x());
-    pos3->set_y(p3.y());
+    pos3->set_y((-1.0)*p3.y());
     debugMutex.unlock();
 }
 void KunDebugEngine::gui_debug_robot(const CGeoPoint& p, double robot_dir){
@@ -102,7 +102,7 @@ void KunDebugEngine::gui_debug_robot(const CGeoPoint& p, double robot_dir){
     Point* robot_pos = robot->mutable_pos();
 
     robot_pos->set_x(p.x());
-    robot_pos->set_y(p.y());
+    robot_pos->set_y((-1.0)*p.y());
     debugMutex.unlock();
 }
 void KunDebugEngine::gui_debug_msg(const CGeoPoint& p, const char* msgstr, int debug_color)
@@ -114,7 +114,7 @@ void KunDebugEngine::gui_debug_msg(const CGeoPoint& p, const char* msgstr, int d
     Debug_Text* text = msg->mutable_text();
     Point* center = text->mutable_pos();
     center->set_x(p.x());
-    center->set_y(p.y());
+    center->set_y((-1.0)*p.y());
     text->set_text(msgstr);
     debugMutex.unlock();
 }
