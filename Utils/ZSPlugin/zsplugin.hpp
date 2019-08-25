@@ -18,19 +18,19 @@ public:
     Semaphore(const Semaphore& s):count_(0){
     }
 
-    void signal(unsigned int c = 1) {
+    virtual void signal(unsigned int c = 1) {
         std::unique_lock<std::mutex> lock(mutex_);
         count_=c;
         cv_.notify_one();
     }
 
-    void wait() {
+    virtual void wait() {
         std::unique_lock<std::mutex> lock(mutex_);
         cv_.wait(lock, [=] { return count_ > 0; });
         --count_;
     }
 
-    bool try_wait(){
+    virtual bool try_wait(){
         std::unique_lock<std::mutex> lock(mutex_);
         if(count_ > 0){
             --count_;
@@ -50,7 +50,7 @@ public:
     ZSData(const ZSData& data):_size(0),_capacity(0),_data(nullptr){
         store(data);
     }
-    ~ZSData(){
+    virtual ~ZSData(){
         if(_capacity > 0){
             free(_data);
         }
@@ -67,6 +67,9 @@ public:
     virtual void store(const void* const data,unsigned long size){
         std::unique_lock<std::shared_mutex> lock(_mutex);
         resize(size);
+        if(size > 40000){
+            std::cerr << "size too large, maybe forget to clear?" << std::endl;
+        }
         memcpy(_data,data,size);
     }
     // thread-unsafe
@@ -93,22 +96,37 @@ class ZSSemaData:public ZSData,public Semaphore{};
 class ZSPlugin{
 public:
     ZSPlugin(){}
+    ZSPlugin(const ZSPlugin&){}
     virtual ~ZSPlugin(){}
-    virtual void run()=0;
-    virtual void publish(const std::string&& msg,const void* data = nullptr,const unsigned long size = 0) final{
+    virtual void run(){
+        std::cerr << "called run function of zsplugin class which should not be called.(fake abstract class)" << std::endl;
+    };
+    virtual void start() final{
+        _t = std::thread([=]{run();});
+        _t.detach();
+    }
+    virtual void publish(const std::string& msg,const void* data = nullptr,const unsigned long size = 0) final{
         auto it = _subscribers.find(msg);
         if (it != _subscribers.end()){
             for(auto p:_subscribers[msg]){
                 p->store(msg,data,size);
             }
         }
+        if (it == _subscribers.end()){
+            std::cerr << "ERROR : didn't DECLARE to PUBLISH this kind of message, check your message type : " << msg << std::endl;
+            return;
+        }
     }
-    virtual void publish(const std::string&& msg,const ZSData& data) final{
+    virtual void publish(const std::string& msg,const ZSData& data) final{
         auto it = _subscribers.find(msg);
         if (it != _subscribers.end()){
             for(auto p:_subscribers[msg]){
                 p->store(msg,data);
             }
+        }
+        if (it == _subscribers.end()){
+            std::cerr << "ERROR : didn't DECLARE to PUBLISH this kind of message, check your message type : " << msg << std::endl;
+            return;
         }
     }
     virtual void receive(const std::string& msg){
@@ -140,12 +158,22 @@ public:
         }
         return res;
     }
+    virtual bool try_receive(const std::string& msg) final{
+        auto it = _databox.find(msg);
+        if (it == _databox.end()){
+            std::cerr << "ERROR : didn't DECLARE to RECEIVE this kind of message, check your message type : " << msg << std::endl;
+            return false;
+        }
+        bool res = it->second.try_wait();
+        return res;
+    }
     virtual void link(ZSPlugin* p,const std::string& msg) final{
         auto it = _subscribers.find(msg);
         if (it == _subscribers.end()){
             std::cerr << "ERROR : didn't DECLARE to PUBLISH message : " << msg << std::endl;
             return;
         }
+        std::cout << "link function called : " << msg << std::endl;
         it->second.push_back(p);
     }
     virtual void store(const std::string& msg,const void* data = nullptr,const unsigned long size = 0) final{
@@ -186,6 +214,8 @@ public:
 private:
     std::map<std::string,std::list<ZSPlugin*>> _subscribers = {};
     std::map<std::string,class ZSSemaData> _databox = {};
+    std::thread _t;
 };
+
 
 #endif // __ZSS_PLUGIN_H__

@@ -31,16 +31,11 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "messages_robocup_ssl_refbox_log.pb.h"
 #include "messages_robocup_ssl_wrapper.pb.h"
 #include "grSimMessage.pb.h"
-#include <QUdpSocket>
-
+#include "setthreadname.h"
 #define ROBOT_GRAY 0.4
 #define WHEEL_COUNT 4
 
 using namespace std;
-namespace{
-    QUdpSocket *commandSocket;
-    QUdpSocket *blueStatusSocket,*yellowStatusSocket;
-}
 dReal randn_notrig(dReal mu=0.0, dReal sigma=1.0);
 dReal randn_trig(dReal mu=0.0, dReal sigma=1.0);
 dReal rand0_1();
@@ -138,7 +133,10 @@ bool ballCallBack(dGeomID o1,dGeomID o2,PSurface* s, int /*robots_count*/)
 SSLWorld::SSLWorld()
 {
     declare_receive("sim_signal");
+    declare_receive("sim_packet");
     declare_publish("ssl_vision");
+    declare_publish("blue_status");
+    declare_publish("yellow_status");
     isGLEnabled = false;
     customDT = -1;
     cfg = new ConfigWidget();
@@ -226,7 +224,6 @@ SSLWorld::SSLWorld()
         p->addObject(walls[i]);
     const int wheeltexid = 4 * cfg->Robots_Count() + 12 + 1 ; //37 for 6 robots
 
-
     cfg->robotSettings = cfg->blueSettings;
     for (int k=0;k<cfg->Robots_Count();k++) {
         float a1 = -form1->x[k];
@@ -308,14 +305,20 @@ SSLWorld::SSLWorld()
     sendGeomCount = 0;
     timer = new QTime();
     timer->start();
-    in_buffer = new char [65536];
 }
 
 void SSLWorld::run(){
+    SetThreadName("SimPlugin");
     std::cout << "SSLWorld plugin start!" << std::endl;
+    std::thread rec([=]{recvActions();});
     while(true){
-        receive("sim_signal");
+        ode_mutex.lock();
         this->step(this->cfg->DeltaTime());
+        ode_mutex.unlock();
+        receive("sim_signal");
+        ode_mutex.lock();
+        sendVisionBuffer();
+        ode_mutex.unlock();
     }
 }
 
@@ -400,182 +403,160 @@ void SSLWorld::step(dReal dt)
         robots[k]->selected = false;
     }
     dMatrix3 R;
-
-    sendVisionBuffer();
     framenum ++;
 }
 
 
 void SSLWorld::recvActions()
 {
-    QHostAddress sender;
-    quint16 port;
+    SetThreadName("SimRecv");
     grSim_Packet packet;
-    while (commandSocket->hasPendingDatagrams())
+    ZSData data;
+    ZSData blueStatue,yellowStatue;
+    while (true)
     {
-        int size = commandSocket->readDatagram(in_buffer, 65536, &sender, &port);
-        if (size > 0)
+        receive("sim_packet",data);
+        packet.ParseFromArray(data.data(), data.size());
+        int team=0;
+        ode_mutex.lock();
+        if (packet.has_commands())
         {
-            packet.ParseFromArray(in_buffer, size);
-            int team=0;
-            if (packet.has_commands())
+            if (packet.commands().isteamyellow()) team=1;
+            for (int i=0;i<packet.commands().robot_commands_size();i++)
             {
-                if (packet.commands().has_isteamyellow())
+                int k = packet.commands().robot_commands(i).id();
+                int id = robotIndex(k, team);
+                if ((id < 0) || (id >= cfg->Robots_Count()*2)) continue;
+                bool wheels = false;
+                if (packet.commands().robot_commands(i).wheelsspeed()==true)
                 {
-                    if (packet.commands().isteamyellow()) team=1;
+                    robots[id]->setSpeed(0, packet.commands().robot_commands(i).wheel1());
+                    robots[id]->setSpeed(1, packet.commands().robot_commands(i).wheel2());
+                    robots[id]->setSpeed(2, packet.commands().robot_commands(i).wheel3());
+                    robots[id]->setSpeed(3, packet.commands().robot_commands(i).wheel4());
+                    wheels = true;
                 }
-                for (int i=0;i<packet.commands().robot_commands_size();i++)
+                if (!wheels)
                 {
-                    if (!packet.commands().robot_commands(i).has_id()) continue;
-                    int k = packet.commands().robot_commands(i).id();
-                    int id = robotIndex(k, team);
-                    if ((id < 0) || (id >= cfg->Robots_Count()*2)) continue;
-                    bool wheels = false;
-                    if (packet.commands().robot_commands(i).has_wheelsspeed())
-                    {
-                        if (packet.commands().robot_commands(i).wheelsspeed()==true)
-                        {
-                            if (packet.commands().robot_commands(i).has_wheel1()) robots[id]->setSpeed(0, packet.commands().robot_commands(i).wheel1());
-                            if (packet.commands().robot_commands(i).has_wheel2()) robots[id]->setSpeed(1, packet.commands().robot_commands(i).wheel2());
-                            if (packet.commands().robot_commands(i).has_wheel3()) robots[id]->setSpeed(2, packet.commands().robot_commands(i).wheel3());
-                            if (packet.commands().robot_commands(i).has_wheel4()) robots[id]->setSpeed(3, packet.commands().robot_commands(i).wheel4());
-                            wheels = true;
-                        }
-                    }
-                    if (!wheels)
-                    {
-                        dReal vx = 0;if (packet.commands().robot_commands(i).has_veltangent()) vx = packet.commands().robot_commands(i).veltangent();
-                        dReal vy = 0;if (packet.commands().robot_commands(i).has_velnormal())  vy = packet.commands().robot_commands(i).velnormal();
-                        dReal vw = 0;if (packet.commands().robot_commands(i).has_velangular()) vw = packet.commands().robot_commands(i).velangular();
-                        robots[id]->setSpeed(vx, vy, vw);
-                    }
-                    dReal kickx = 0 , kickz = 0;
-                    bool kick = false;
-                    if (packet.commands().robot_commands(i).has_kickspeedx())
-                    {
-                        kick = true;
-                        kickx = packet.commands().robot_commands(i).kickspeedx();
-                    }
-                    if (packet.commands().robot_commands(i).has_kickspeedz())
-                    {
-                        kick = true;
-                        kickz = packet.commands().robot_commands(i).kickspeedz();
-                    }
-                    if (kick && ((kickx>0.0001) || (kickz>0.0001)))
-                        robots[id]->kicker->kick(kickx,kickz);
-                    int rolling = 0;
-                    if (packet.commands().robot_commands(i).has_spinner())
-                    {
-                        if (packet.commands().robot_commands(i).spinner()) rolling = 1;
-                    }
-                    robots[id]->kicker->setRoller(rolling);
+                    dReal vx = 0;vx = packet.commands().robot_commands(i).veltangent();
+                    dReal vy = 0;vy = packet.commands().robot_commands(i).velnormal();
+                    dReal vw = 0;vw = packet.commands().robot_commands(i).velangular();
+                    robots[id]->setSpeed(vx, vy, vw);
+                }
+                dReal kickx = 0 , kickz = 0;
+                bool kick = false;
+                kick = true;
+                kickx = packet.commands().robot_commands(i).kickspeedx();
+                kick = true;
+                kickz = packet.commands().robot_commands(i).kickspeedz();
+                if (kick && ((kickx>0.0001) || (kickz>0.0001)))
+                    robots[id]->kicker->kick(kickx,kickz);
+                int rolling = 0;
+                if (packet.commands().robot_commands(i).spinner()) rolling = 1;
+                robots[id]->kicker->setRoller(rolling);
 
-                                        if (team == 0) {
-                        int curInfraredBlue;
-                        if (robots[id]->kicker->isTouchingBall())curInfraredBlue = k;
-                        else {
-                            if (lastInfraredBlue == k) curInfraredBlue = -1;
-                            else curInfraredBlue = lastInfraredBlue;
-                        }
-                        if (curInfraredBlue!=lastInfraredBlue)
-                        {
-                            if (lastInfraredBlue!=-1)
-                            {
-                                grSimMessage::grSimInfo info;
-                                info.set_id(lastInfraredBlue);
-                                info.set_isinfrared(0);
-                                int size = info.ByteSize();
-                                QByteArray buffer(size, 0);
-                                info.SerializeToArray(buffer.data(), buffer.size());
-                                blueStatusSocket->writeDatagram(buffer.data(), buffer.size(), sender, cfg->BlueStatusSendPort());
-                            }
-
-                            if (curInfraredBlue!=-1)
-                            {
-                                grSimMessage::grSimInfo info;
-                                info.set_id(curInfraredBlue);
-                                info.set_isinfrared(1);
-                                int size = info.ByteSize();
-                                QByteArray buffer(size, 0);
-                                info.SerializeToArray(buffer.data(), buffer.size());
-                                blueStatusSocket->writeDatagram(buffer.data(), buffer.size(), sender, cfg->BlueStatusSendPort());
-                            }
-                            lastInfraredBlue = curInfraredBlue;
-                        }
-                    }
+                if (team == 0) {
+                    int curInfraredBlue;
+                    if (robots[id]->kicker->isTouchingBall())curInfraredBlue = k;
                     else {
-                        int curInfraredYellow;
-                        if (robots[id]->kicker->isTouchingBall())curInfraredYellow = k;
-                        else {
-                            if (lastInfraredYellow == k)curInfraredYellow = -1;
-                            else curInfraredYellow = lastInfraredYellow;
-                        }
-                        if (curInfraredYellow != lastInfraredYellow)
-                        {
-                            if (lastInfraredYellow != -1)
-                            {
-                                grSimMessage::grSimInfo info;
-                                info.set_id(lastInfraredYellow);
-                                info.set_isinfrared(0);
-                                int size = info.ByteSize();
-                                QByteArray buffer(size, 0);
-                                info.SerializeToArray(buffer.data(), buffer.size());
-                                yellowStatusSocket->writeDatagram(buffer.data(), buffer.size(), sender, cfg->YellowStatusSendPort());
-                            }
-
-                            if (curInfraredYellow != -1)
-                            {
-                                grSimMessage::grSimInfo info;
-                                info.set_id(curInfraredYellow);
-                                info.set_isinfrared(1);
-                                int size = info.ByteSize();
-                                QByteArray buffer(size, 0);
-                                info.SerializeToArray(buffer.data(), buffer.size());
-                                yellowStatusSocket->writeDatagram(buffer.data(), buffer.size(), sender, cfg->YellowStatusSendPort());
-                            }
-                            lastInfraredYellow = curInfraredYellow;
-                        }
+                        if (lastInfraredBlue == k) curInfraredBlue = -1;
+                        else curInfraredBlue = lastInfraredBlue;
                     }
-                }
-            }
-            if (packet.has_replacement())
-            {
-                for (int i=0;i<packet.replacement().robots_size();i++)
-                {
-                    int team = 0;
-                    if (packet.replacement().robots(i).has_yellowteam())
+                    if (curInfraredBlue!=lastInfraredBlue)
                     {
-                        if (packet.replacement().robots(i).yellowteam())
-                            team = 1;
+                        if (lastInfraredBlue!=-1)
+                        {
+                            grSimMessage::grSimInfo info;
+                            info.set_id(lastInfraredBlue);
+                            info.set_isinfrared(0);
+                            int size = info.ByteSize();
+                            blueStatue.resize(size);
+                            info.SerializeToArray(blueStatue.ptr(), blueStatue.size());
+                            publish("blue_status",blueStatue);
+                        }
+
+                        if (curInfraredBlue!=-1)
+                        {
+                            grSimMessage::grSimInfo info;
+                            info.set_id(curInfraredBlue);
+                            info.set_isinfrared(1);
+                            int size = info.ByteSize();
+                            blueStatue.resize(size);
+                            info.SerializeToArray(blueStatue.ptr(), blueStatue.size());
+                            publish("blue_status",blueStatue);
+                        }
+                        lastInfraredBlue = curInfraredBlue;
                     }
-                    if (!packet.replacement().robots(i).has_id()) continue;
-                    int k = packet.replacement().robots(i).id();
-                    dReal x = 0, y = 0, dir = 0;
-                    bool turnon = true;
-                    if (packet.replacement().robots(i).has_x()) x = packet.replacement().robots(i).x();
-                    if (packet.replacement().robots(i).has_y()) y = packet.replacement().robots(i).y();
-                    if (packet.replacement().robots(i).has_dir()) dir = packet.replacement().robots(i).dir();
-                    if (packet.replacement().robots(i).has_turnon()) turnon = packet.replacement().robots(i).turnon();
-                    int id = robotIndex(k, team);
-                    if ((id < 0) || (id >= cfg->Robots_Count()*2)) continue;
-                    robots[id]->setXY(x,y);
-                    robots[id]->resetRobot();
-                    robots[id]->setDir(dir);
-                    robots[id]->on = turnon;
                 }
-                if (packet.replacement().has_ball())
-                {
-                    dReal x = 0, y = 0, vx = 0, vy = 0;
-                    if (packet.replacement().ball().has_x())  x  = packet.replacement().ball().x();
-                    if (packet.replacement().ball().has_y())  y  = packet.replacement().ball().y();
-                    if (packet.replacement().ball().has_vx()) vx = packet.replacement().ball().vx();
-                    if (packet.replacement().ball().has_vy()) vy = packet.replacement().ball().vy();
-                    ball->setBodyPosition(x,y,cfg->BallRadius()*1.2);
-                    dBodySetLinearVel(ball->body,vx,vy,0);
-                    dBodySetAngularVel(ball->body,0,0,0);
+                else {
+                    int curInfraredYellow;
+                    if (robots[id]->kicker->isTouchingBall())curInfraredYellow = k;
+                    else {
+                        if (lastInfraredYellow == k)curInfraredYellow = -1;
+                        else curInfraredYellow = lastInfraredYellow;
+                    }
+                    if (curInfraredYellow != lastInfraredYellow)
+                    {
+                        if (lastInfraredYellow != -1)
+                        {
+                            grSimMessage::grSimInfo info;
+                            info.set_id(lastInfraredYellow);
+                            info.set_isinfrared(0);
+                            int size = info.ByteSize();
+                            yellowStatue.resize(size);
+                            info.SerializeToArray(yellowStatue.ptr(), yellowStatue.size());
+                            publish("yellow_status",yellowStatue);
+                        }
+
+                        if (curInfraredYellow != -1)
+                        {
+                            grSimMessage::grSimInfo info;
+                            info.set_id(curInfraredYellow);
+                            info.set_isinfrared(1);
+                            int size = info.ByteSize();
+                            yellowStatue.resize(size);
+                            info.SerializeToArray(yellowStatue.ptr(), yellowStatue.size());
+                            publish("yellow_status",yellowStatue);
+                        }
+                        lastInfraredYellow = curInfraredYellow;
+                    }
                 }
             }
         }
+        if (packet.has_replacement())
+        {
+            for (int i=0;i<packet.replacement().robots_size();i++)
+            {
+                int team = 0;
+                if (packet.replacement().robots(i).yellowteam())
+                    team = 1;
+                int k = packet.replacement().robots(i).id();
+                dReal x = 0, y = 0, dir = 0;
+                bool turnon = true;
+                x = packet.replacement().robots(i).x();
+                y = packet.replacement().robots(i).y();
+                dir = packet.replacement().robots(i).dir();
+                turnon = packet.replacement().robots(i).turnon();
+                int id = robotIndex(k, team);
+                if ((id < 0) || (id >= cfg->Robots_Count()*2)) continue;
+                robots[id]->setXY(x,y);
+                robots[id]->resetRobot();
+                robots[id]->setDir(dir);
+                robots[id]->on = turnon;
+            }
+            if (packet.replacement().has_ball())
+            {
+                dReal x = 0, y = 0, vx = 0, vy = 0;
+                x  = packet.replacement().ball().x();
+                y  = packet.replacement().ball().y();
+                vx = packet.replacement().ball().vx();
+                vy = packet.replacement().ball().vy();
+                ball->setBodyPosition(x,y,cfg->BallRadius()*1.2);
+                dBodySetLinearVel(ball->body,vx,vy,0);
+                dBodySetAngularVel(ball->body,0,0,0);
+            }
+        }
+        ode_mutex.unlock();
     }
 }
 
@@ -589,25 +570,26 @@ dReal normalizeAngle(dReal a)
 
 bool SSLWorld::visibleInCam(int id, double x, double y)
 {
-    if(id==-1) return true;
-    id %= 4;
-    if (id==0)
-    {
-        if (x>-0.2 && y>-0.2) return true;
-    }
-    if (id==1)
-    {
-        if (x>-0.2 && y<0.2) return true;
-    }
-    if (id==2)
-    {
-        if (x<0.2 && y<0.2) return true;
-    }
-    if (id==3)
-    {
-        if (x<0.2 && y>-0.2) return true;
-    }
-    return false;
+    return true;
+//    if(id==-1) return true;
+//    id %= 4;
+//    if (id==0)
+//    {
+//        if (x>-0.2 && y>-0.2) return true;
+//    }
+//    if (id==1)
+//    {
+//        if (x>-0.2 && y<0.2) return true;
+//    }
+//    if (id==2)
+//    {
+//        if (x<0.2 && y<0.2) return true;
+//    }
+//    if (id==3)
+//    {
+//        if (x<0.2 && y>-0.2) return true;
+//    }
+//    return false;
 }
 
 #define CONVUNIT(x) ((int)(1000*(x)))

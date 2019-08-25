@@ -1,0 +1,16 @@
+$#include "Global.h"
+
+CVisionModule*  vision;
+CKickStatus*    kickStatus;
+CDribbleStatus* dribbleStatus;
+CGDebugEngine*  debugEngine;
+CWorldModel*	world;
+CKickDirection* kickDirection;
+CDefPos2015* defPos2015;
+CSupportPos* supportPos;
+CTandemPos* tandemPos;
+CBestPlayer* bestPlayer;
+CDefenceInfo* defenceInfo;
+CIndirectDefender* indirectDefender;
+CAssistPoint* assistPoint;
+CMessiDecision* messi;

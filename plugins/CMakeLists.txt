@@ -1,4 +1,7 @@
 add_subdirectory(Sim)
 add_subdirectory(Vision)
-# add_subdirectory(Decision)
 add_subdirectory(Cmd2Sim)
+# add_subdirectory(Decision)
+add_subdirectory(UDPReceiver)
+add_subdirectory(UDPSender)
+add_subdirectory(Environment)

@@ -46,3 +46,7 @@ CMakeLists.txt.user*
 build/*
 bin
 lib
+
+python/
+
+plugins/Decision/LuaModule/lua_zeus.cpp

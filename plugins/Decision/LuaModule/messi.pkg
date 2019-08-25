@@ -1,0 +1,21 @@
+$#include "VisionModule.h"
+$#include "singleton.h"
+$#include "WorldModel.h"
+$#include "messidecision.h"
+
+class CMessiDecision {
+    CMessiDecision();
+    bool messiRun();
+    string nextState(); 
+    int leaderNum();
+    int receiverNum();
+    int attackerAmount();
+    CGeoPoint passPos();
+    CGeoPoint receiverPos(); 
+    CGeoPoint leaderPos();
+    CGeoPoint otherPos(int i);
+    CGeoPoint goaliePassPos(); 
+    void setMessiRun(bool lMessiRun);
+    bool isFlat();
+    double passVel();
+};

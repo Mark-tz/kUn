@@ -1,17 +1,19 @@
 #include <iostream>
 #include <thread>
 #include "dllexport.h"
-#include "sslworld.h"
-#include "visionmodule.h"
+#include <Environment/environment.h>
+#include <cstdio>
 using namespace std;
 int main(){
-    auto sim = SSLWorld::instance();
-    VisionModule vm;
-    sim.link(&vm,"ssl_vision");
-    vm.link(&sim,"sim_signal");
-    std::thread t1([&]{sim.run();});
-    std::thread t2([&]{vm.run();});
-    t1.join();
-    t2.join();
+    std::vector<double> temp{0.0,0.0,0.0};
+    Environment env(10666);
+    env.start_all();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    env.reset();
+    while(true){
+        std::this_thread::sleep_for(std::chrono::microseconds(10000));
+        env.reset();
+        env.step(temp);
+    }
 	return 0;
 }

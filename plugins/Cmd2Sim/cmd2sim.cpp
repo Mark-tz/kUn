@@ -3,6 +3,7 @@
 #include "zss_cmd.pb.h"
 #include "grSim_Packet.pb.h"
 #include "geometry.h"
+#include <QtDebug>
 namespace{
     float trans_dribble(float dribble) {
         return dribble / 3.0;
@@ -14,7 +15,10 @@ namespace{
         return v;
     }
 }
-Cmd2Sim::Cmd2Sim(bool isTeamYellow):isTeamYellow(isTeamYellow){}
+Cmd2Sim::Cmd2Sim(bool isTeamYellow):isTeamYellow(isTeamYellow){
+    declare_receive("zss_cmds");
+    declare_publish("sim_packet");
+}
 void Cmd2Sim::run(){
     ZSData data,sendData;
     Robots_Command zss_cmds;
@@ -25,7 +29,6 @@ void Cmd2Sim::run(){
         sim_cmds->Clear();
         sim_cmds->set_timestamp(0);
         sim_cmds->set_isteamyellow(isTeamYellow);
-
         // receive & parse with `ZSData`
         receive("zss_cmds",data);
         zss_cmds.ParseFromArray(data.data(),data.size());
@@ -51,9 +54,9 @@ void Cmd2Sim::run(){
                 sim_cmd->set_kickspeedx(vz);
             }
             //set velocity and dribble
-            double vx = zss_cmd.velocity_x();
-            double vy = zss_cmd.velocity_y();
-            double vr = zss_cmd.velocity_r();
+            float vx = zss_cmd.velocity_x();
+            float vy = zss_cmd.velocity_y();
+            float vr = zss_cmd.velocity_r();
             double dt = 1. / 60;
             double theta = - vr * dt;
             CVector v(vx, vy);
@@ -63,6 +66,7 @@ void Cmd2Sim::run(){
                 vx = v.x();
                 vy = v.y();
             }
+//            qDebug() << "markdebug : " << vx << trans_length(vx);
             sim_cmd->set_veltangent(trans_length(vx));
             sim_cmd->set_velnormal(-trans_length(vy));
             sim_cmd->set_velangular(-trans_r(vr));
@@ -73,6 +77,6 @@ void Cmd2Sim::run(){
         auto size = packet.ByteSize();
         sendData.resize(size);
         packet.SerializeToArray(sendData.ptr(),size);
-        publish("sim_cmds",sendData);
+        publish("sim_packet",sendData);
     }
 }
