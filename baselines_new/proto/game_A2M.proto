@@ -1,0 +1,49 @@
+syntax = "proto2";
+
+message Game_Commands {
+  required bool start = 1;
+  required bool isKey = 2;
+  repeated Game_Command command = 3;
+  repeated Game_Command_joy command_joy = 4;
+
+  // delay * 0.1ms
+  optional int32 delay = 5;
+}
+
+message Game_Command {
+  required int32 robot_id = 1;
+  
+  required int32 order = 2;
+
+  required bool onPress = 3;
+
+  required int64 time = 4;
+}
+
+message Game_Command_joy {
+  // The unique ID of the robot, as identified by SSL-Vision.
+  required int32 robot_id = 1;
+  // static ms of program alive time
+  required int64 time = 2;
+  
+  required int32 button_a = 3;
+  required int32 button_b = 4;
+  required int32 button_x = 5;
+  required int32 button_y = 6;
+  required int32 button_lb = 7;
+  required int32 button_rb = 8;
+  required int32 button_lo = 9;
+  required int32 button_ro = 10;
+  required int32 button_start = 11;
+  required int32 button_back = 12;
+  required int32 button_home = 13;
+
+  required int32 axis_lx = 14;
+  required int32 axis_ly = 15;
+  required int32 axis_rx = 16;
+  required int32 axis_ry = 17;
+  required int32 axis_lt = 18;
+  required int32 axis_rt = 19;
+  required int32 axis_xx = 20;
+  required int32 axis_yy = 21;
+}
