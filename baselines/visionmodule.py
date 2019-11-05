@@ -38,7 +38,7 @@ class VisionModule:
         self.me_infrared = 0
     # def get_angle(self):
     #     self.me_angle = 
-    def get_feedback(self,action):
+    def get_feedback(self,target,action):
         me = None
         enemy = None
         # enemy2 = None
@@ -80,10 +80,11 @@ class VisionModule:
             # ballDir = me2ball.angle/math.pi
             # ballDist = me2ball.length/7.0
             # print(ballDir)
-            reward = 1
+            reward = -1
             done = False
             # getBall = -1
             if self.outside(me):
+                # reward -= 1000
                 # print("outside")
                 done = True
             if self.bs.getInfrared(ME) != 1 :
@@ -92,17 +93,25 @@ class VisionModule:
                 else:
                     continue
                 # getBall = 1
-                reward = 1
+                reward = 0
             if self.ys.getInfrared(ENEMY) == 1:
+                # reward -= 1000
                 # print("enemygetball")
-                reward -= 1
+                done = True
+            target_pos =  Vec2d(target[0],target[1])
+            ball = Vec2d(ball.raw_x/1000.0,ball.raw_y/1000.0)
+            toTarget = target_pos - ball
+            if toTarget.length<1:
+                reward += 500
                 done = True
             reward -= math.fabs(action[0])*0.5
+            reward += 1/toTarget.length*2
             # print("markdebug : ",done)
-            return [enemy.raw_x/1000.0,enemy.raw_y/1000.0,enemy.raw_orientation,me.raw_x/1000.0,me.raw_y/1000.0,me.raw_orientation], reward, done, {}
+            return [target[0],target[1],enemy.raw_x/1000.0,enemy.raw_y/1000.0,enemy.raw_orientation,me.raw_x/1000.0,me.raw_y/1000.0,me.raw_orientation], reward, done, {}
 
 if __name__ == '__main__':
     vision = VisionModule()
     while True:
         # print(vision.get_feedback())
-        vision.get_feedback([0])
+        # vision.get_feedback([0])
+        pass
