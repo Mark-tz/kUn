@@ -103,12 +103,11 @@ if(BUILD_PYTHON_PLUGINS)
 	else()
 	    message("Python not found")
 	endif()
+	message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+	message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+	message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+	message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 endif()
-
-message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
-message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
-message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
-message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 
 enable_testing()
 include_directories(
