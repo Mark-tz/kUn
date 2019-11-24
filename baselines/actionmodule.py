@@ -11,6 +11,7 @@ ACTION_PORT = 20011 # grSim command listen port
 ME = 0
 ENEMY = 0
 ENEMY2 = 1
+ENEMY3 = 2
 
 class ActionModule:
     def __init__(self, ACTION_PORT=20011, ACTION_IP='127.0.0.1'):
@@ -57,6 +58,13 @@ class ActionModule:
         bot_rep.y = np.random.randint(-300, 300)/100.0
         bot_rep.dir = 0.0
         bot_rep.id = ENEMY2
+        bot_rep.yellowteam = True
+
+        bot_rep = replacement.robots.add()
+        bot_rep.x = np.random.randint(-300, 300)/100.0
+        bot_rep.y = np.random.randint(-300, 300)/100.0
+        bot_rep.dir = 0.0
+        bot_rep.id = ENEMY3
         bot_rep.yellowteam = True
         
         ball_rep = replacement.ball

@@ -8,7 +8,8 @@ import math
 from statusmodule import StatusModule
 ME = 0
 ENEMY = 0
-# ENEMY2 = 1
+ENEMY2 = 1
+ENEMY3 = 2
 
 BLUE_STATUS_PORT = 60011
 YELLOW_STATUS_PORT = 60012
@@ -19,6 +20,7 @@ OUTSIDE_Y = 4000
 class VisionModule:
     me_angle = 0
     me_infrared = 0
+    _sum_punish = 0
     def __init__(self, VISION_PORT=41001, SENDERIP = '0.0.0.0'):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
@@ -36,6 +38,7 @@ class VisionModule:
     def reset(self):
         self.me_angle = 0
         self.me_infrared = 0
+        self._sum_punish = 0
     # def get_angle(self):
     #     self.me_angle = 
     def get_feedback(self,target,action):
@@ -57,10 +60,14 @@ class VisionModule:
             for robot in robots:
                 if robot.robot_id == ENEMY:
                     enemy = robot
+                if robot.robot_id == ENEMY2:
+                    enemy2 = robot
+                if robot.robot_id == ENEMY3:
+                    enemy3 = robot
                 # if robot.robot_id == ENEMY2:
                 #     enemy2 = robot
             ball = package.balls # not repeat
-            if me is None or enemy is None or ball is None:
+            if me is None or enemy is None or enemy2 is None or enemy3 is None or ball is None:
                 continue
 
             self.me_angle = me.raw_orientation
@@ -94,20 +101,24 @@ class VisionModule:
                     continue
                 # getBall = 1
                 reward = 0
-            if self.ys.getInfrared(ENEMY) == 1:
-                # reward -= 1000
+            if self.ys.getInfrared(ENEMY) == 1 or self.ys.getInfrared(ENEMY2) == 1 or self.ys.getInfrared(ENEMY3) == 1:
+                reward -= 1000
                 # print("enemygetball")
                 done = True
             target_pos =  Vec2d(target[0],target[1])
             ball = Vec2d(ball.raw_x/1000.0,ball.raw_y/1000.0)
             toTarget = target_pos - ball
-            if toTarget.length<1:
+            if toTarget.length<0.5:
                 reward += 500
                 done = True
-            reward -= math.fabs(action[0])*0.5
-            reward += 1/toTarget.length*2
+            
+            punish = math.fabs(action[0])*0.5 + toTarget.length
+            # if self._sum_punish + punish > 500:
+            #     punish = 0
+            self._sum_punish += punish
+            reward -= 1#punish*0.3
             # print("markdebug : ",done)
-            return [target[0],target[1],enemy.raw_x/1000.0,enemy.raw_y/1000.0,enemy.raw_orientation,me.raw_x/1000.0,me.raw_y/1000.0,me.raw_orientation], reward, done, {}
+            return [target[0],target[1],enemy2.raw_x/1000.0,enemy2.raw_y/1000.0,enemy2.raw_orientation,enemy3.raw_x/1000.0,enemy3.raw_y/1000.0,enemy3.raw_orientation,enemy.raw_x/1000.0,enemy.raw_y/1000.0,enemy.raw_orientation,me.raw_x/1000.0,me.raw_y/1000.0,me.raw_orientation], reward, done, {}
 
 if __name__ == '__main__':
     vision = VisionModule()
